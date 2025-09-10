@@ -11,7 +11,7 @@ public:
     ~RenderManager();
 
     bool init(SDL_Renderer* renderer);
-    void drawText(const std::string& text, int x, int y);
+    void drawText(const std::string& text, unsigned int x, unsigned int y);
     void clear();
     void present();
     void setDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);

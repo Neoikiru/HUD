@@ -17,6 +17,7 @@ add_executable(hud
         src/managers/InputManager.cpp
         src/managers/RenderManager.cpp
         src/modes/MenuMode.cpp
+        src/modes/DebugMode.cpp
 )
 
 # Tell the compiler where to find all necessary header files

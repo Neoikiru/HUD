@@ -9,16 +9,18 @@ public:
     void processEvent(const SDL_Event& event);
     void update();
 
-    bool isShortPress();
-    bool isLongPress();
+    bool wasShortPressed();
+    bool wasLongPressed();
 
 private:
     bool m_wasKeyDown = false;
     bool m_isKeyDown = false;
     Uint32 m_keyDownTime = 0;
 
-    bool m_shortPressed = false;
-    bool m_longPressed = false;
+    bool m_shortPressEvent = false;
+    bool m_longPressEvent = false;
+
+    bool m_longPressHandled = false;
     
     const Uint32 LONG_PRESS_DURATION_MS = 500;
 };

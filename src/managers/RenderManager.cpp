@@ -28,7 +28,7 @@ bool RenderManager::init(SDL_Renderer* renderer) {
     return true;
 }
 
-void RenderManager::drawText(const std::string& text, int x, int y) {
+void RenderManager::drawText(const std::string& text, const unsigned int x, const unsigned int y) {
     if (text.empty()) return;
 
     SDL_Color textColor = {255, 255, 255, 255}; // White

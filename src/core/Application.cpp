@@ -76,6 +76,10 @@ void Application::update() {
 }
 
 void Application::render() {
+    // Set a default clear color here; modes can override it if they want.
+    m_renderManager.setDrawColor(0, 0, 0, 255); // Black
+    m_renderManager.clear();
+
     // Let the current mode do all its drawing to the back buffer
     m_modeManager.render(m_renderManager);
 

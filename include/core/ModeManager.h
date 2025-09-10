@@ -11,6 +11,7 @@ public:
     void render(RenderManager& renderManager);
 
     void pushMode(std::unique_ptr<Mode> mode);
+    void popMode ();
 
     bool isEmpty() const;
 
