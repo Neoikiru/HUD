@@ -8,7 +8,7 @@ MenuMode::MenuMode() {
     m_menuItems.emplace_back("Video Stream");
 }
 
-ModeAction MenuMode::update(InputManager& inputManager) {
+ModeAction MenuMode::update(InputManager& inputManager, IMUManager& imuManager) {
     if (inputManager.wasShortPressed()) {
         m_selectIndex = (m_selectIndex + 1) % m_menuItems.size();
     } else if (inputManager.wasLongPressed()) {
@@ -18,9 +18,11 @@ ModeAction MenuMode::update(InputManager& inputManager) {
     return ModeAction::None;
 }
 
-void MenuMode::render(RenderManager& renderManager) {
+void MenuMode::render(RenderManager& renderManager, IMUManager& imuManager) {
     // Set background to dark grey
     renderManager.setDrawColor(30, 30, 30, 255);
+
+    renderManager.clear();
 
     renderManager.drawText("Main Menu", 75, 50);
 
@@ -39,7 +41,6 @@ std::unique_ptr<Mode> MenuMode::getNextMode () {
     switch (m_selectIndex) {
         case 0: // DeBug
             return std::make_unique<DebugMode>();
-            break;
         default:
             return nullptr;
     }

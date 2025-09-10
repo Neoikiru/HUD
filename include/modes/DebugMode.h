@@ -6,8 +6,8 @@
 
 class DebugMode : public Mode {
 public:
-    ModeAction update(InputManager& inputManager) override;
-    void render(RenderManager& renderManager) override;
+    ModeAction update(InputManager& inputManager, IMUManager& imuManager) override;
+    void render(RenderManager& renderManager, IMUManager& imuManager) override;
 private:
 };
 

@@ -1,9 +1,9 @@
 #include "core/ModeManager.h"
 
-void ModeManager::update(InputManager& inputManager) {
+void ModeManager::update(InputManager& inputManager, IMUManager& imuManager) {
     if (m_modes.empty()) return;
 
-    ModeAction action = m_modes.top()->update(inputManager);
+    ModeAction action = m_modes.top()->update(inputManager, imuManager);
 
     switch (action) {
         case ModeAction::Push: {
@@ -23,9 +23,9 @@ void ModeManager::update(InputManager& inputManager) {
 
 }
 
-void ModeManager::render(RenderManager& renderManager) {
+void ModeManager::render(RenderManager& renderManager, IMUManager& imuManager) {
     if (!m_modes.empty()) {
-        m_modes.top()->render(renderManager);
+        m_modes.top()->render(renderManager, imuManager);
     }
 }
 

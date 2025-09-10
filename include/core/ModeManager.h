@@ -7,8 +7,8 @@
 
 class ModeManager {
 public:
-    void update(InputManager& inputManager);
-    void render(RenderManager& renderManager);
+    void update(InputManager& inputManager, IMUManager& imuManager);
+    void render(RenderManager& renderManager, IMUManager& imuManager);
 
     void pushMode(std::unique_ptr<Mode> mode);
     void popMode ();

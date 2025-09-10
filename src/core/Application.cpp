@@ -41,7 +41,18 @@ bool Application::init() {
         SDL_Log("Warning: VSync not enabled! SDL_Error: %s", SDL_GetError());
     }
 
-    if (!m_renderManager.init(m_renderer)) {
+
+    if (!m_inputManager.init()) {
+        SDL_Log("!!! CRITICAL: InputManager init FAILED !!!");
+        return false;
+    }
+
+    if (!m_imuManager.start()) {
+        SDL_Log("Failed to start IMUManager!");
+        return false;
+    }
+
+    if (!m_renderManager.init(m_renderer, SCREEN_WIDTH, SCREEN_HEIGHT)) {
         SDL_Log("Failed to initialize RenderManager!");
         return false;
     }
@@ -66,23 +77,17 @@ void Application::processEvents() {
         if (e.type == SDL_EVENT_QUIT) {
             m_quit = true;
         }
-        m_inputManager.processEvent(e);
     }
 }
 
 void Application::update() {
     m_inputManager.update();
-    m_modeManager.update(m_inputManager);
+    m_imuManager.update();
+    m_modeManager.update(m_inputManager, m_imuManager);
 }
 
 void Application::render() {
-    // Set a default clear color here; modes can override it if they want.
-    m_renderManager.setDrawColor(0, 0, 0, 255); // Black
-    m_renderManager.clear();
-
-    // Let the current mode do all its drawing to the back buffer
-    m_modeManager.render(m_renderManager);
-
-    // Present the completed back buffer to the screen
-    m_renderManager.present();
+    m_renderManager.beginScene();
+    m_modeManager.render(m_renderManager, m_imuManager);
+    m_renderManager.endScene();
 }

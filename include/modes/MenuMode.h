@@ -8,8 +8,8 @@
 class MenuMode : public Mode {
 public:
     MenuMode();
-    ModeAction update(InputManager& inputManager) override;
-    void render(RenderManager& renderManager) override;
+    ModeAction update(InputManager& inputManager, IMUManager& imuManager) override;
+    void render(RenderManager& renderManager, IMUManager& imuManager) override;
     std::unique_ptr<Mode> getNextMode() override;
 
 private:

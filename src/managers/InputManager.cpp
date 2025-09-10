@@ -2,21 +2,15 @@
 
 InputManager::InputManager() = default;
 
-void InputManager::processEvent(const SDL_Event& event) {
-    // For testing use the spacebar.
-    if (event.type == SDL_EVENT_KEY_DOWN) {
-        if (event.key.key == SDLK_SPACE && !event.key.repeat) {
-            m_isKeyDown = true;
-        }
-    } else if (event.type == SDL_EVENT_KEY_UP) {
-        if (event.key.key == SDLK_SPACE) {
-            m_isKeyDown = false;
-        }
-    }
+bool InputManager::init() {
+    // Initialize the GPIO for pin 17 on the main chip "gpiochip0" on RPi 5
+    return m_gpioManager.init("gpiochip0", 17);
 }
 
 void InputManager::update() {
     // These flags detect a single-frame event.
+    m_isKeyDown = m_gpioManager.isButtonPressed();
+
     bool shortPressDetected = false;
     bool longPressDetected = false;
 

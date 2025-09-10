@@ -4,7 +4,9 @@
 #include <SDL3/SDL.h>
 #include "managers/InputManager.h"
 #include "managers/RenderManager.h"
+#include "managers/IMUManager.h"
 #include "core/ModeManager.h"
+
 
 class Application {
 public:
@@ -26,6 +28,7 @@ private:
     InputManager m_inputManager;
     RenderManager m_renderManager;
     ModeManager m_modeManager;
+    IMUManager m_imuManager;
 };
 
 #endif //HUD_APPLICATION_H

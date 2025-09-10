@@ -2,17 +2,20 @@
 #define HUD_INPUTMANAGER_H
 
 #include <SDL3/SDL.h>
+#include "managers/GPIOManager.h"
 
 class InputManager {
 public:
     InputManager();
-    void processEvent(const SDL_Event& event);
+    bool init();
     void update();
 
     bool wasShortPressed();
     bool wasLongPressed();
 
 private:
+    GPIOManager m_gpioManager;
+
     bool m_wasKeyDown = false;
     bool m_isKeyDown = false;
     Uint32 m_keyDownTime = 0;
