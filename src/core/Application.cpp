@@ -69,6 +69,8 @@ void Application::run() {
         update();
         render();
     }
+    m_imuManager.stop();
+    m_renderManager.clear();
 }
 
 void Application::processEvents() {
