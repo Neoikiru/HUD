@@ -22,7 +22,7 @@ public:
     virtual ModeAction update(InputManager& inputManager, IMUManager& imuManager) = 0;
     virtual void render(RenderManager& renderManager, IMUManager& imuManager) = 0;
 
-    virtual std::unique_ptr<Mode> getNextMode() { return nullptr; };
+    virtual std::unique_ptr<Mode> getNextMode() { return nullptr; }
 };
 
 #endif //HUD_MODE_H

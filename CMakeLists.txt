@@ -17,12 +17,14 @@ add_executable(hud
         src/main.cpp
         src/core/Application.cpp
         src/core/ModeManager.cpp
-        src/managers/InputManager.cpp
-        src/managers/RenderManager.cpp
         src/modes/MenuMode.cpp
         src/modes/DebugMode.cpp
+        src/managers/InputManager.cpp
+        src/managers/RenderManager.cpp
         src/managers/GPIOManager.cpp
         src/managers/IMUManager.cpp
+        src/managers/SceneManager.cpp
+        src/windows/TextWindow.cpp
 )
 
 # Tell the compiler where to find all necessary header files
