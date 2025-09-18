@@ -5,6 +5,16 @@ project(HUD CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
+
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY	https://github.com/g-truc/glm.git
+        GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+
+FetchContent_MakeAvailable(glm)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GPIODCXX REQUIRED libgpiodcxx)
 
@@ -34,6 +44,9 @@ target_include_directories(hud PRIVATE
 )
 
 # Link the libraries
-target_link_libraries(hud PRIVATE SDL3_ttf::SDL3_ttf SDL3::SDL3 ${GPIODCXX_LIBRARIES})
-
-# Add other libraries here (GStreamer, etc.) as you integrate them
+target_link_libraries(hud PRIVATE
+        SDL3_ttf::SDL3_ttf
+        SDL3::SDL3
+        ${GPIODCXX_LIBRARIES}
+        glm::glm
+)
