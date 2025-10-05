@@ -22,10 +22,10 @@ void SceneManger::addWindow(std::unique_ptr<Window> window) {
     m_windows.push_back(std::move(window));
 }
 
-void SceneManger::render(RenderManager &renderManager, IMUManager &imuManager) const {
+void SceneManger::render(RenderManager &renderManager, IMUManager &imuManager, const glm::mat4& view, const glm::mat4& projection) const {
     if (m_windows.empty()) return;
     for (const auto& window : m_windows) {
-        window->render(renderManager, imuManager);
+        window->render(renderManager, imuManager, view, projection);
     }
 }
 

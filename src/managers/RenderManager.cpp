@@ -61,6 +61,18 @@ void RenderManager::setDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     SDL_SetRenderDrawColor(m_renderer, r, g, b, a);
 }
 
+void RenderManager::drawFilledRect(const SDL_FRect* rect) {
+    if (rect) {
+        SDL_RenderFillRect(m_renderer, rect);
+    }
+}
+
+void RenderManager::drawRect(const SDL_FRect* rect) {
+    if (rect) {
+        SDL_RenderRect(m_renderer, rect);
+    }
+}
+
 void RenderManager::clear() {
     SDL_RenderClear(m_renderer);
 }

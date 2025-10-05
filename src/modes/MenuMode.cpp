@@ -1,4 +1,5 @@
 #include "modes/MenuMode.h"
+#include "modes/ARMode.h"
 #include "modes/DebugMode.h"
 
 MenuMode::MenuMode() {
@@ -44,7 +45,7 @@ std::unique_ptr<Mode> MenuMode::getNextMode () {
         case 0: // DeBug
             return std::make_unique<DebugMode>();
         case 1: // AR
-            return nullptr;
+            return std::make_unique<ARMode>();
         case 2: // Home Assistant
             return nullptr;
         case 3: // Video Stream

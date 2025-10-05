@@ -17,6 +17,8 @@ public:
 
     void drawText(const std::string& text, unsigned int x, unsigned int y);
     void setDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+    void drawFilledRect(const SDL_FRect* rect);
+    void drawRect(const SDL_FRect* rect);
     void clear();
 
 private:

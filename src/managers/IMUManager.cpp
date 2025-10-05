@@ -1,5 +1,7 @@
 #include "managers/IMUManager.h"
 #include <iostream>
+#include <glm/gtc/quaternion.hpp>
+
 #include "SDL3/SDL_log.h"
 
 IMUManager::IMUManager() = default;
@@ -76,5 +78,10 @@ const IMUDataEuler &IMUManager::quantToEuler() const {
 
     return euler_data;
 }
+
+glm::quat IMUManager::getOrientation() const {
+    return {m_data.w, m_data.x, m_data.y, m_data.z};
+}
+
 
 

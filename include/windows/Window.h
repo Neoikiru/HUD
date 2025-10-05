@@ -4,12 +4,9 @@
 #include "managers/IMUManager.h"
 #include "managers/InputManager.h"
 #include "managers/RenderManager.h"
+#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
 
-struct WindowsPosition {
-    int x = 0;
-    int y = 0;
-    int z = 0;
-};
 
 struct WindowSize {
     int width = 0;
@@ -30,11 +27,15 @@ public:
     virtual void destroy() {}
 
     virtual WindowAction update(InputManager& inputManager, IMUManager& imuManager) = 0;
-    virtual void render(RenderManager& renderManager, IMUManager& imuManager) const = 0;
-private:
-    WindowsPosition m_position;
+    virtual void render(RenderManager& renderManager, IMUManager& imuManager, const glm::mat4& view, const glm::mat4& projection) const = 0;
+
+    void setPosition(const glm::vec3& position) { m_position = position; }
+    void setPinned(const bool isPinned) { m_isPinned = isPinned; }
+
+protected:
+    glm::vec3 m_position = {0.0f, 0.0f, 0.0f};
     WindowSize m_size;
-    bool m_IsPinned = false;
+    bool m_isPinned = false;
 };
 
 #endif //WINDOW_H

@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cmath>
 #include <string>
+#include <glm/fwd.hpp>
 
 struct IMUData {
     float x = 0.0f;
@@ -29,6 +30,7 @@ public:
 
     const IMUData& getData() const;
     const IMUDataEuler& quantToEuler() const;
+    glm::quat getOrientation() const;
 
 
 private:
