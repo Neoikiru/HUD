@@ -27,8 +27,7 @@ enum class ModeAction {
 class Mode {
 public:
     virtual ~Mode() = default;
-    
-    // Lifecycle methods now receive the full context
+
     virtual void enter(const ManagerContext& context) {}
     virtual void leave(const ManagerContext& context) {}
     

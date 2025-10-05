@@ -7,7 +7,6 @@
 
 class TextWindow : public Window {
 public:
-    // Constructor now takes world dimensions
     TextWindow(const std::string& text, const glm::vec2& worldSize, bool isPinned);
     ~TextWindow();
     void create() override;

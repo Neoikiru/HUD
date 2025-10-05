@@ -22,7 +22,7 @@ private:
     bool m_isPinnedMode = false;
 
     // Define the distance at which to spawn new windows
-    const float WINDOW_SPAWN_DISTANCE = 1.8f; // Corresponds to -1.8 depth in Python script
+    const float WINDOW_SPAWN_DISTANCE = 1.8f;
 };
 
 #endif //ARMODE_H

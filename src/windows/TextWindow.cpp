@@ -2,10 +2,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "SDL3/SDL_log.h"
 
-// Constants from your Application class
 const int SCREEN_WIDTH = 240;
 const int SCREEN_HEIGHT = 240;
-const int PADDING = 5; // Reduced padding for a tighter look
+const int PADDING = 5;
 
 TextWindow::TextWindow(const std::string& text, const glm::vec2& worldSize, bool isPinned) {
     m_text = text;
@@ -24,7 +23,6 @@ void TextWindow::create() {
     if (!m_font) {
         SDL_Log("TextWindow failed to load font! TTF Error: %s", SDL_GetError());
     }
-    // Window size is now determined by m_worldSize, not text content.
 }
 
 

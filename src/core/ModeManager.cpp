@@ -3,7 +3,6 @@
 void ModeManager::update(const ManagerContext& context) {
     if (m_modes.empty()) return;
 
-    // We pass the specific managers from the context to the mode's update method
     ModeAction action = m_modes.top()->update(*context.inputManager, *context.imuManager);
 
     switch (action) {

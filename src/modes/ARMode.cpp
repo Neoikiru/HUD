@@ -5,13 +5,11 @@
 const int SCREEN_WIDTH = 240;
 const int SCREEN_HEIGHT = 240;
 
-// Corresponds to the Python script's camera parameters
 const float CAMERA_FOV_Y_DEGREES = 60.0f;
 const float CAMERA_NEAR_PLANE = 0.1f;
 const float CAMERA_FAR_PLANE = 100.0f;
 
 ARMode::ARMode() {
-    // This now perfectly matches the Python script's projection
     m_projectionMatrix = glm::perspective(glm::radians(CAMERA_FOV_Y_DEGREES),
                                           (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
                                           CAMERA_NEAR_PLANE,
