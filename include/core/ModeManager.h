@@ -7,11 +7,11 @@
 
 class ModeManager {
 public:
-    void update(InputManager& inputManager, IMUManager& imuManager);
+    void update(const ManagerContext& context);
     void render(RenderManager& renderManager, IMUManager& imuManager);
 
-    void pushMode(std::unique_ptr<Mode> mode);
-    void popMode ();
+    void pushMode(std::unique_ptr<Mode> mode, const ManagerContext& context);
+    void popMode(const ManagerContext& context);
 
     bool isEmpty() const;
 
@@ -20,3 +20,5 @@ private:
 };
 
 #endif //HUD_MODEMANAGER_H
+
+  

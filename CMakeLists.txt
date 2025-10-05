@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(glm REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GPIODCXX REQUIRED libgpiodcxx)
+pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-app-1.0)
 
 # This assumes the SDL source is available in vendored/SDL
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
@@ -15,17 +16,26 @@ add_subdirectory(vendored/SDL_ttf EXCLUDE_FROM_ALL)
 
 # Create the executable
 add_executable(hud
+        # CORE
         src/main.cpp
         src/core/Application.cpp
         src/core/ModeManager.cpp
+
+        # MODES
         src/modes/MenuMode.cpp
         src/modes/DebugMode.cpp
         src/modes/ARMode.cpp
+        src/modes/VideoStreamMode.cpp
+
+        # MANGERS
         src/managers/InputManager.cpp
         src/managers/RenderManager.cpp
         src/managers/GPIOManager.cpp
         src/managers/IMUManager.cpp
         src/managers/SceneManager.cpp
+        src/managers/VideoManager.cpp
+
+        # WINDOWS
         src/windows/TextWindow.cpp
 )
 
@@ -33,6 +43,7 @@ add_executable(hud
 target_include_directories(hud PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         ${GPIODCXX_INCLUDE_DIRS}
+        ${GST_INCLUDE_DIRS}
 )
 
 # Link the libraries
@@ -41,4 +52,5 @@ target_link_libraries(hud PRIVATE
         SDL3::SDL3
         ${GPIODCXX_LIBRARIES}
         glm::glm
+        ${GST_LIBRARIES}
 )

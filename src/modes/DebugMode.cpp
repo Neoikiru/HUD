@@ -1,4 +1,7 @@
 #include "modes/DebugMode.h"
+#include "managers/InputManager.h"
+#include "managers/RenderManager.h"
+#include "managers/IMUManager.h"
 #include <iomanip>
 
 

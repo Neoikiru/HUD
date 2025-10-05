@@ -18,7 +18,7 @@ ARMode::ARMode() {
                                           CAMERA_FAR_PLANE);
 }
 
-void ARMode::enter() {
+void ARMode::enter(const ManagerContext &context) {
     SDL_Log("Entering AR Mode");
 }
 

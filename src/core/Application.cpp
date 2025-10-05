@@ -57,8 +57,15 @@ bool Application::init() {
         return false;
     }
 
+    m_managerContext.inputManager = &m_inputManager;
+    m_managerContext.renderManager = &m_renderManager;
+    m_managerContext.imuManager = &m_imuManager;
+    m_managerContext.videoManager = &m_videoManager;
+    m_managerContext.renderer = m_renderer;
+
+
     // Set the initial mode
-    m_modeManager.pushMode(std::make_unique<MenuMode>());
+    m_modeManager.pushMode(std::make_unique<MenuMode>(), m_managerContext);
 
     return true;
 }
@@ -85,7 +92,7 @@ void Application::processEvents() {
 void Application::update() {
     m_inputManager.update();
     m_imuManager.update();
-    m_modeManager.update(m_inputManager, m_imuManager);
+    m_modeManager.update(m_managerContext);
 }
 
 void Application::render() {

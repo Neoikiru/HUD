@@ -5,6 +5,7 @@
 #include "managers/InputManager.h"
 #include "managers/RenderManager.h"
 #include "managers/IMUManager.h"
+#include "managers/VideoManager.h"
 #include "core/ModeManager.h"
 
 
@@ -29,6 +30,9 @@ private:
     RenderManager m_renderManager;
     ModeManager m_modeManager;
     IMUManager m_imuManager;
+    VideoManager m_videoManager;
+
+    ManagerContext m_managerContext;
 };
 
 #endif //HUD_APPLICATION_H

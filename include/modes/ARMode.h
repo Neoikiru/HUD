@@ -12,7 +12,7 @@ class ARMode : public Mode {
 public:
     ARMode();
 
-    void enter() override;
+    void enter(const ManagerContext &context) override;
     ModeAction update(InputManager& inputManager, IMUManager& imuManager) override;
     void render(RenderManager& renderManager, IMUManager& imuManager) override;
 

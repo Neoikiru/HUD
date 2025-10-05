@@ -1,6 +1,7 @@
 #include "modes/MenuMode.h"
 #include "modes/ARMode.h"
 #include "modes/DebugMode.h"
+#include "modes/VideoStreamMode.h"
 
 MenuMode::MenuMode() {
     m_menuItems.emplace_back("DeBug");
@@ -49,7 +50,7 @@ std::unique_ptr<Mode> MenuMode::getNextMode () {
         case 2: // Home Assistant
             return nullptr;
         case 3: // Video Stream
-            return nullptr;
+            return std::make_unique<VideoStreamMode>();
         case 4: // Exit HUD ( Should never happen...hopefully )
             return nullptr;
 

@@ -1,26 +1,27 @@
 #include "core/ModeManager.h"
 
-void ModeManager::update(InputManager& inputManager, IMUManager& imuManager) {
+void ModeManager::update(const ManagerContext& context) {
     if (m_modes.empty()) return;
 
-    ModeAction action = m_modes.top()->update(inputManager, imuManager);
+    // We pass the specific managers from the context to the mode's update method
+    ModeAction action = m_modes.top()->update(*context.inputManager, *context.imuManager);
 
     switch (action) {
         case ModeAction::Push: {
             auto nextMode = m_modes.top()->getNextMode();
             if (nextMode) {
-                pushMode(std::move(nextMode));
+                // Pass the context when pushing the new mode
+                pushMode(std::move(nextMode), context);
             }
             break;
         }
         case ModeAction::Pop:
-            popMode();
+            // Pass the context when popping
+            popMode(context);
             break;
         case ModeAction::None:
-            // Do nothing
             break;
     }
-
 }
 
 void ModeManager::render(RenderManager& renderManager, IMUManager& imuManager) {
@@ -29,24 +30,22 @@ void ModeManager::render(RenderManager& renderManager, IMUManager& imuManager) {
     }
 }
 
-void ModeManager::pushMode(std::unique_ptr<Mode> mode) {
+void ModeManager::pushMode(std::unique_ptr<Mode> mode, const ManagerContext& context) {
     if (!m_modes.empty()) {
-        m_modes.top()->leave();
+        m_modes.top()->leave(context);
     }
-    mode->enter();
+    mode->enter(context);
     m_modes.push(std::move(mode));
 }
 
-void ModeManager::popMode() {
-    if (m_modes.empty()) {
-        return;
-    }
+void ModeManager::popMode(const ManagerContext& context) {
+    if (m_modes.empty()) return;
 
-    m_modes.top()->leave();
+    m_modes.top()->leave(context);
     m_modes.pop();
 
     if (!m_modes.empty()) {
-        m_modes.top()->enter();
+        m_modes.top()->enter(context);
     }
 }
 
