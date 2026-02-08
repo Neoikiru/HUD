@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "rpi5-cross-debug",
+      "displayName": "RPi5 Cross Debug",
+      "description": "Cross-compilation for Raspberry Pi 5 (ARM64) using Docker",
+      "binaryDir": "${sourceDir}/cmake-build-debug-rpi5",
+      "toolchainFile": "${sourceDir}/cmake/aarch64-toolchain.cmake",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "rpi5-cross-release",
+      "displayName": "RPi5 Cross Release",
+      "description": "Cross-compilation for Raspberry Pi 5 (ARM64) using Docker",
+      "binaryDir": "${sourceDir}/cmake-build-release-rpi5",
+      "toolchainFile": "${sourceDir}/cmake/aarch64-toolchain.cmake",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ]
+}
