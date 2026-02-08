@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(HUD CXX)
+project(HUD C CXX)
 
 # 1. Standard Settings
 set(CMAKE_CXX_STANDARD 20)
@@ -31,19 +31,30 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL3)
 
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG        1.0.3
+)
+FetchContent_MakeAvailable(glm)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GPIOD REQUIRED IMPORTED_TARGET libgpiod)
 
 # 4. Your Application
+file(GLOB SH2_SOURCES "src/Drivers/sh2/*.c" "src/Drivers/sh2/*.cpp")
+
 add_executable(hud
     src/main.cpp
     src/Core/Engine.cpp
     src/Drivers/BNO08xDriver.cpp
     src/Drivers/GpioButton.cpp
+    ${SH2_SOURCES}
 )
 
 target_include_directories(hud PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Drivers/sh2
     ${GPIOD_INCLUDE_DIRS}
 )
 
@@ -51,6 +62,7 @@ target_include_directories(hud PRIVATE
 target_link_libraries(hud PRIVATE
         SDL3::SDL3-static
         PkgConfig::GPIOD
+        glm::glm
 )
 
 # Standard compiler warnings
