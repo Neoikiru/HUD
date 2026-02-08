@@ -1,6 +1,7 @@
 #include "Drivers/GpioButton.hpp"
 #include <gpiod.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_timer.h>
 
 namespace Drivers {
 
@@ -10,8 +11,6 @@ namespace Drivers {
     };
 
     GpioButton::GpioButton(int pin) : m_pImpl(std::make_unique<Impl>()), m_pin(pin) {
-        // Open the GPIO chip (usually gpiochip4 on Pi 5, verify with `gpioinfo`)
-        // We try chip 4 first (standard for Pi 5 RP1), then chip 0.
         m_pImpl->chip = gpiod_chip_open_by_number(4);
         if (!m_pImpl->chip) m_pImpl->chip = gpiod_chip_open_by_number(0);
 
@@ -30,10 +29,84 @@ namespace Drivers {
         if (m_pImpl->chip) gpiod_chip_close(m_pImpl->chip);
     }
 
-    bool GpioButton::IsPressed() {
-        if (!m_pImpl->line) return false;
-        // Returns 1 if high, 0 if low. Adjust logic if your button is active-low (pull-up)
-        return gpiod_line_get_value(m_pImpl->line) == 1;
+    void GpioButton::Update() {
+        if (!m_pImpl->line) return;
+
+        bool currentPressed = gpiod_line_get_value(m_pImpl->line) == 1;
+        uint64_t now = SDL_GetTicks();
+
+        // Reset one-frame events
+        m_eventPressed = false;
+        m_eventReleased = false;
+        m_eventDoubleTap = false;
+
+        // Check for click timeout to reset counter
+        if (m_clickCount > 0 && (now - m_lastClickTime > 300)) {
+            // Note: We don't reset to 0 immediately if we want to allow "IsDoubleTapped" to return true 
+            // exactly once. But usually, we reset the count on the NEXT press if too much time passed.
+            // Or we can reset here if the button is released.
+            if (!m_isPressed) {
+                m_clickCount = 0; 
+            }
+        }
+
+        if (currentPressed && !m_wasPressed) {
+            // Rising Edge (Press)
+            m_eventPressed = true;
+            m_pressStartTime = now;
+            m_longPressConsumed = false;
+
+            // Click Counting
+            if (now - m_lastClickTime < 300) {
+                m_clickCount++;
+            } else {
+                m_clickCount = 1;
+            }
+            m_lastClickTime = now;
+
+            if (m_clickCount == 2) {
+                m_eventDoubleTap = true;
+            }
+        } else if (!currentPressed && m_wasPressed) {
+            // Falling Edge (Release)
+            m_eventReleased = true;
+        }
+
+        m_isPressed = currentPressed;
+        m_wasPressed = currentPressed;
+    }
+
+    bool GpioButton::IsPressed() const {
+        return m_isPressed;
+    }
+
+    bool GpioButton::WasPressed() const {
+        return m_eventPressed;
+    }
+
+    bool GpioButton::WasReleased() const {
+        return m_eventReleased;
+    }
+
+    bool GpioButton::IsLongPressed(float seconds) {
+        if (!m_isPressed) return false;
+        if (m_longPressConsumed) return false;
+
+        uint64_t duration = SDL_GetTicks() - m_pressStartTime;
+        if (duration >= (uint64_t)(seconds * 1000)) {
+            m_longPressConsumed = true; 
+            m_clickCount = 0; // Reset click count on hold
+            return true;
+        }
+        return false;
+    }
+
+    bool GpioButton::IsDoubleTapped() {
+        return m_eventDoubleTap;
+    }
+    
+    int GpioButton::GetClickCount() const {
+        return m_clickCount;
     }
 
 }

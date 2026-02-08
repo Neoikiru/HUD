@@ -3,6 +3,10 @@
 #include "Drivers/GpioButton.hpp"
 #include <stdexcept>
 #include <cmath>
+#include <sstream>
+#include <iomanip>
+#include <vector>
+#include <string>
 #include <SDL3/SDL_main.h>
 
 namespace Core {
@@ -28,13 +32,12 @@ void Engine::Initialize(const EngineConfig& config) {
     if (!m_renderer) throw std::runtime_error("Renderer Creation Failed");
 
     // 2. Setup Drivers
-    // We pass the I2C bus path (usually /dev/i2c-1 on Pi)
     m_imu = std::make_unique<Drivers::BNO08xDriver>("/dev/i2c-1");
     if (!m_imu->Init()) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "IMU not found! Running in limited mode.");
     }
 
-    // Setup Button on GPIO 17 (Example)
+    // Setup Button on GPIO 17
     m_actionButton = std::make_unique<Drivers::GpioButton>(17);
 
     m_isRunning = true;
@@ -62,53 +65,71 @@ void Engine::HandleInput() {
         if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE) m_isRunning = false;
     }
     
-    // Check Hardware Button
-    if (m_actionButton->IsPressed()) {
-        SDL_Log("Physical Button Pressed!");
+    m_actionButton->Update();
+
+    if (m_actionButton->WasPressed()) {
+        SDL_Log("Button Pressed! Count: %d", m_actionButton->GetClickCount());
+    }
+
+    if (m_actionButton->IsDoubleTapped()) {
+        SDL_Log("Physical Button Double Tapped!");
+    }
+    
+    if (m_actionButton->IsLongPressed(0.5f)) {
+        SDL_Log("Physical Button Held for 0.5 seconds!");
     }
 }
 
 void Engine::Update(double dt) {
-    // Poll Sensor Data
-    Drivers::IMUData data = m_imu->Read();
-    // Use data.rotation for your HUD logic later...
+    m_imu->Read(); 
 }
 
-    void Engine::Render() {
-    // 1. Clear Screen (Black)
+void Engine::Render() {
+    // 1. Clear Screen
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     SDL_RenderClear(m_renderer);
 
     // 2. Read IMU Data
     Drivers::IMUData imu = m_imu->Read();
 
-    // 3. Visualization: Artificial Horizon
-    // Convert Quaternion Z/W to 2D Rotation for visualization
-    // (Simplified math for 2D plane rotation)
-    float angle = atan2(2.0f * (imu.quat_w * imu.quat_z), 1.0f - 2.0f * (imu.quat_z * imu.quat_z));
+    // 3. Render Debug Text line-by-line (SDL_RenderDebugText doesn't handle \n)
+    SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+    
+    auto renderLine = [&](int lineNum, const std::string& text) {
+        SDL_RenderDebugText(m_renderer, 10.0f, 10.0f + (lineNum * 15.0f), text.c_str());
+    };
 
-    // Center point
-    float cx = 120.0f; // Half of 240
-    float cy = 120.0f;
-    float length = 80.0f;
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2);
 
-    // Calculate line endpoints based on rotation
-    float x1 = cx + length * cos(angle);
-    float y1 = cy + length * sin(angle);
-    float x2 = cx - length * cos(angle);
-    float y2 = cy - length * sin(angle);
+    renderLine(0, "BNO08x Status");
+    
+    ss.str(""); ss << "W:" << imu.rotation.w << " X:" << imu.rotation.x;
+    renderLine(1, ss.str());
+    
+    ss.str(""); ss << "Y:" << imu.rotation.y << " Z:" << imu.rotation.z;
+    renderLine(2, ss.str());
 
-    // Draw the Horizon Line (Green)
-    SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
-    SDL_RenderLine(m_renderer, x1, y1, x2, y2);
+    ss.str(""); ss << "AccX:" << imu.linearAccel.x;
+    renderLine(3, ss.str());
 
-    // 4. Visualization: Button State (Red Dot if pressed)
+    ss.str(""); ss << "AccY:" << imu.linearAccel.y;
+    renderLine(4, ss.str());
+
+    ss.str(""); ss << "AccZ:" << imu.linearAccel.z;
+    renderLine(5, ss.str());
+
+    ss.str(""); ss << "Accuracy: " << (int)imu.accuracy;
+    renderLine(6, ss.str());
+
+    // 4. Button Indicator
     if (m_actionButton->IsPressed()) {
         SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, 255);
-        SDL_FRect indicator = { 220, 10, 10, 10 };
+        SDL_FRect indicator = { 210, 10, 20, 20 };
         SDL_RenderFillRect(m_renderer, &indicator);
     }
 
     SDL_RenderPresent(m_renderer);
 }
+
 } // namespace Core

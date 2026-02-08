@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <cstdint>
 
 namespace Drivers {
 
@@ -7,12 +8,35 @@ namespace Drivers {
     public:
         explicit GpioButton(int pin);
         ~GpioButton();
-        bool IsPressed();
+        
+        void Update(); 
+
+        bool IsPressed() const;
+        bool WasPressed() const; 
+        bool WasReleased() const; 
+        
+        bool IsLongPressed(float seconds); 
+        bool IsDoubleTapped(); 
+        
+        int GetClickCount() const;
 
     private:
-        struct Impl; // Forward declaration
+        struct Impl; 
         std::unique_ptr<Impl> m_pImpl;
         int m_pin;
+        
+        bool m_isPressed = false;
+        bool m_wasPressed = false;
+        
+        bool m_eventPressed = false;
+        bool m_eventReleased = false;
+        bool m_eventDoubleTap = false;
+
+        uint64_t m_pressStartTime = 0;
+        uint64_t m_lastClickTime = 0; // Time of the previous press (for multi-click)
+        bool m_longPressConsumed = false;
+        
+        int m_clickCount = 0;
     };
 
 }
