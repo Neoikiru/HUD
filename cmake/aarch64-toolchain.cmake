@@ -9,10 +9,12 @@ set(CMAKE_SYSROOT /)
 set(PKG_CONFIG_EXECUTABLE /usr/bin/aarch64-linux-gnu-pkg-config)
 set(ENV{PKG_CONFIG_DIR} "")
 set(ENV{PKG_CONFIG_PATH} "")
-set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+# Add the custom prefix where we installed libcamera to the search path
+set(ENV{PKG_CONFIG_LIBDIR} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/aarch64-linux-gnu/lib/pkgconfig:/usr/aarch64-linux-gnu/lib/aarch64-linux-gnu/pkgconfig")
 set(ENV{PKG_CONFIG_SYSROOT_DIR} "/")
 
 # Search behavior configuration
+# Include /usr/aarch64-linux-gnu to find the manually built libs
 set(CMAKE_FIND_ROOT_PATH /usr/aarch64-linux-gnu /usr/lib/aarch64-linux-gnu /usr)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

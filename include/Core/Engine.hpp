@@ -1,39 +1,38 @@
 #pragma once
-#include <SDL3/SDL.h>
 #include <memory>
-#include <vector>
-
-// Forward declarations to keep compile times fast
-namespace Drivers { class BNO08xDriver; class GpioButton; }
+#include "Core/Types.hpp"
+#include "Core/SharedState.hpp"
+#include "Rendering/DisplayManager.hpp"
+#include "Perception/PerceptionService.hpp"
+#include "Drivers/GpioButton.hpp"
 
 namespace Core {
 
-struct EngineConfig {
-    int window_width;
-    int window_height;
-};
+    class Engine {
+    public:
+        Engine();
+        ~Engine();
 
-class Engine {
-public:
-    Engine();
-    ~Engine();
+        void Initialize(const EngineConfig& config);
+        void Run();
 
-    void Initialize(const EngineConfig& config);
-    void Run();
+    private:
+        void HandleInput();
+        void Update(double dt);
+        void Render();
 
-private:
-    void Update(double dt);
-    void Render();
-    void HandleInput();
+        bool m_isRunning;
+        
+        // Modules
+        std::shared_ptr<SharedState> m_state;
+        Rendering::DisplayManager m_display;
+        std::unique_ptr<Perception::PerceptionService> m_perception;
+        
+        // Input (on Main Thread)
+        std::unique_ptr<Drivers::GpioButton> m_actionButton;
+        
+        SDL_Texture* m_cameraTexture = nullptr;
+        std::vector<uint32_t> m_conversionBuffer;
+    };
 
-    // System State
-    bool m_isRunning;
-    SDL_Window* m_window;
-    SDL_Renderer* m_renderer;
-
-    // Subsystems (Smart Pointers manage memory automatically)
-    std::unique_ptr<Drivers::BNO08xDriver> m_imu;
-    std::unique_ptr<Drivers::GpioButton> m_actionButton;
-};
-
-} // namespace Core
+}

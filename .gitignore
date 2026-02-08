@@ -1,5 +1,6 @@
 scripts/deploy.sh
 
 build-pi
+cmake-build-debug-rpi5
 
 .idea

@@ -7,17 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 2. Configure SDL3 Options *BEFORE* FetchContent
 set(SDL_UNIX_CONSOLE_BUILD ON CACHE BOOL "Allow building without X11/Wayland" FORCE)
-# We explicitly disable Desktop environments to fix the XTEST error
 set(SDL_X11             OFF CACHE BOOL "Disable X11" FORCE)
 set(SDL_WAYLAND         OFF CACHE BOOL "Disable Wayland" FORCE)
 set(SDL_OPENGL          OFF CACHE BOOL "Disable Legacy OpenGL" FORCE)
-
-# Enable the backends strictly needed for embedded/console Pi
 set(SDL_KMSDRM          ON  CACHE BOOL "Enable KMSDRM (Direct to Display)" FORCE)
 set(SDL_OPENGLES        ON  CACHE BOOL "Enable OpenGL ES (for Pi GPU)" FORCE)
 set(SDL_RPI             ON  CACHE BOOL "Enable RPi Specifics" FORCE)
-
-# Force static build so you don't need to copy .so files to the Pi
 set(SDL_SHARED          OFF CACHE BOOL "Build Static" FORCE)
 set(SDL_STATIC          ON  CACHE BOOL "Build Static" FORCE)
 set(SDL_TEST            OFF CACHE BOOL "Disable SDL Tests" FORCE)
@@ -41,14 +36,53 @@ FetchContent_MakeAvailable(glm)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GPIOD REQUIRED IMPORTED_TARGET libgpiod)
 
+# --- Manual Libcamera Find ---
+# We use NO_CMAKE_FIND_ROOT_PATH to tell CMake to look exactly where we say
+# because we know the absolute path in the container.
+find_path(LIBCAMERA_INCLUDE_DIR 
+    NAMES libcamera/camera.h 
+    PATHS /usr/aarch64-linux-gnu/include/libcamera
+    NO_DEFAULT_PATH
+    NO_CMAKE_FIND_ROOT_PATH
+)
+find_library(LIBCAMERA_LIBRARY 
+    NAMES camera libcamera
+    PATHS /usr/aarch64-linux-gnu/lib 
+    NO_DEFAULT_PATH
+    NO_CMAKE_FIND_ROOT_PATH
+)
+find_library(LIBCAMERA_BASE_LIBRARY 
+    NAMES camera-base libcamera-base
+    PATHS /usr/aarch64-linux-gnu/lib 
+    NO_DEFAULT_PATH
+    NO_CMAKE_FIND_ROOT_PATH
+)
+
+if(LIBCAMERA_INCLUDE_DIR AND LIBCAMERA_LIBRARY AND LIBCAMERA_BASE_LIBRARY)
+    add_library(LibCamera::LibCamera UNKNOWN IMPORTED)
+    set_target_properties(LibCamera::LibCamera PROPERTIES
+        IMPORTED_LOCATION "${LIBCAMERA_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LIBCAMERA_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${LIBCAMERA_BASE_LIBRARY}"
+    )
+    message(STATUS "Found LibCamera: ${LIBCAMERA_LIBRARY}")
+    message(STATUS "Found LibCamera Base: ${LIBCAMERA_BASE_LIBRARY}")
+else()
+    message(FATAL_ERROR "LibCamera not found in /usr/aarch64-linux-gnu! Check Docker build.")
+endif()
+
 # 4. Your Application
 file(GLOB SH2_SOURCES "src/Drivers/sh2/*.c" "src/Drivers/sh2/*.cpp")
 
 add_executable(hud
     src/main.cpp
     src/Core/Engine.cpp
+    src/Core/ThreadUtils.cpp
+    src/Rendering/DisplayManager.cpp
+    src/Perception/PerceptionService.cpp
     src/Drivers/BNO08xDriver.cpp
     src/Drivers/GpioButton.cpp
+    src/Drivers/CameraDriver.cpp
     ${SH2_SOURCES}
 )
 
@@ -63,9 +97,9 @@ target_link_libraries(hud PRIVATE
         SDL3::SDL3-static
         PkgConfig::GPIOD
         glm::glm
+        LibCamera::LibCamera
 )
 
-# Standard compiler warnings
 if(MSVC)
     target_compile_options(hud PRIVATE /W4)
 else()

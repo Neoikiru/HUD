@@ -59,6 +59,21 @@ namespace Drivers {
 
         SDL_Log("Using BNO08x Address: 0x%02X", address);
         
+        // Initialize HAL first so we can use its Read/Write functions
+        sh2_hal_set_fd(m_fileDescriptor, address);
+        sh2_hal_linux_init(&m_hal);
+
+        // --- FLUSH ---
+        // Drain any pending data from previous run/boot
+        SDL_Log("Flushing I2C...");
+        uint8_t dummy[512];
+        for (int i=0; i<50; ++i) {
+            if (m_hal.read(NULL, dummy, sizeof(dummy), NULL) == 0) {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
         // --- MANUAL SOFT RESET ---
         // Send SHTP Executable (Ch 1) Command 1 (Reset)
         // Header: Len=5 (4+1), Ch=1, Seq=0
@@ -73,17 +88,15 @@ namespace Drivers {
         write(m_fileDescriptor, resetPkt, sizeof(resetPkt));
         
         // Wait for reset to complete and advertisement to appear
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
         // -------------------------
-
-        // Initialize HAL
-        sh2_hal_set_fd(m_fileDescriptor, address);
-        sh2_hal_linux_init(&m_hal);
 
         // 3. Open SH2
         int status = sh2_open(&m_hal, asyncCallback, NULL);
         if (status != SH2_OK) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "sh2_open failed: %d", status);
+            // Don't return false yet, maybe it works anyway?
+            // Actually, if open fails, we probably can't configure.
             return false;
         }
 
@@ -107,9 +120,6 @@ namespace Drivers {
 
         SDL_Log("Enabling Linear Acceleration...");
         EnableReport(SH2_LINEAR_ACCELERATION, 50000);
-
-        // Also enable standard Rotation Vector just in case the sensor prefers it
-        // EnableReport(SH2_ROTATION_VECTOR, 50000); 
 
         SDL_Log("BNO08x Initialized (SH2)");
         return true;
