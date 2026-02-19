@@ -21,6 +21,10 @@ RUN apt-get update && apt-get install -y \
     # Install SDL3 dependencies
     libasound2-dev:arm64 \
     libgpiod-dev:arm64 \
+    # Add Vulkan \
+    libvulkan-dev:arm64 \
+    glslang-dev:arm64 \
+    glslang-tools:arm64 \
     libpulse-dev:arm64 \
     libaudio-dev:arm64 \
     libwayland-dev:arm64 \
