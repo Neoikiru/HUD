@@ -5,6 +5,7 @@
 #include "Rendering/DisplayManager.hpp"
 #include "Perception/PerceptionService.hpp"
 #include "Drivers/GpioButton.hpp"
+#include "Perception/HandTracking/HandTracking.hpp"
 
 namespace Core {
 
@@ -27,6 +28,7 @@ namespace Core {
         std::shared_ptr<SharedState> m_state;
         Rendering::DisplayManager m_display;
         std::unique_ptr<Perception::PerceptionService> m_perception;
+        std::unique_ptr<Perception::HandTracker> m_handTracker;
         
         // Input (on Main Thread)
         std::unique_ptr<Drivers::GpioButton> m_actionButton;

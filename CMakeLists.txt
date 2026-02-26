@@ -97,17 +97,27 @@ file(GLOB SH2_SOURCES "src/Drivers/sh2/*.c" "src/Drivers/sh2/*.cpp")
 
 add_executable(hud
     src/main.cpp
+
     src/Core/Engine.cpp
     src/Core/ThreadUtils.cpp
+
     src/Rendering/DisplayManager.cpp
+
     src/Perception/PerceptionService.cpp
+
+    src/Perception/HandTracking/HandTracking.cpp
+    src/Perception/HandTracking/hand.cpp
+    src/Perception/HandTracking/landmark.cpp
+
     src/Drivers/BNO08xDriver.cpp
     src/Drivers/GpioButton.cpp
     src/Drivers/CameraDriver.cpp
+
     ${SH2_SOURCES}
 )
 
-target_include_directories(hud PRIVATE 
+target_include_directories(hud PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/assets
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Drivers/sh2
     ${GPIOD_INCLUDE_DIRS}
@@ -125,7 +135,7 @@ target_link_libraries(hud PRIVATE
 )
 
 # Copy assets to the build directory so the executable can find them
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if(MSVC)
     target_compile_options(hud PRIVATE /W4)

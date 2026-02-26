@@ -6,6 +6,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "Perception/HandTracking/hand.h"
 
 namespace Core {
 
@@ -41,6 +42,11 @@ namespace Core {
         // We store pointers to frames to avoid copying
         // A deque allows acting as a ring buffer (limit size)
         std::deque<std::shared_ptr<CameraFrame>> cameraQueue;
+
+        // --- Hand Tracking Data ---
+        std::mutex handMutex;
+        std::vector<PalmObject> objects;
+        std::atomic<uint64_t> inferenceLatency = 0;
 
         // --- System State ---
         std::atomic<bool> isRunning{true};

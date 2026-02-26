@@ -114,8 +114,9 @@ namespace Drivers {
     void CameraDriver::Stop() {
         if (!m_camera) return;
 
-        m_camera->stop();
         m_camera->requestCompleted.disconnect(this, &CameraDriver::RequestCompleted);
+
+        m_camera->stop();
         m_requests.clear();
 
         for (auto const& [fd, addr] : m_mappedBuffers) {
@@ -124,8 +125,11 @@ namespace Drivers {
         }
         m_mappedBuffers.clear();
         m_bufferSizes.clear();
-        
+
         m_allocator.reset();
+
+        m_camera->release();
+        m_camera.reset();
     }
 
     void CameraDriver::RequestCompleted(libcamera::Request *request) {
