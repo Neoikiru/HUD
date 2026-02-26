@@ -27,6 +27,7 @@ namespace Rendering {
     private:
         SDL_Window* m_window = nullptr;
         SDL_Renderer* m_renderer = nullptr;
+        SDL_Texture* m_renderTarget = nullptr;
     };
 
 }

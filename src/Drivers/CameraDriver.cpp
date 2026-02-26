@@ -1,5 +1,6 @@
 #include "Drivers/CameraDriver.hpp"
 #include <sys/mman.h>
+#include <libcamera/orientation.h>
 #include <unistd.h>
 #include <SDL3/SDL_log.h>
 #include <cstring>
@@ -30,6 +31,8 @@ namespace Drivers {
         }
 
         m_config = m_camera->generateConfiguration( { libcamera::StreamRole::Viewfinder } );
+
+        m_config->orientation = libcamera::Orientation::Rotate180;
         
         libcamera::StreamConfiguration &streamConfig = m_config->at(0);
         streamConfig.pixelFormat = libcamera::formats::RGB888; 

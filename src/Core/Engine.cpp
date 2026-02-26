@@ -110,7 +110,19 @@ namespace Core {
 
         // Always draw the texture if it exists (persisting the last frame if no new one arrived)
         if (m_cameraTexture) {
-            SDL_RenderTexture(renderer, m_cameraTexture, NULL, NULL);
+            SDL_FRect dstRect = { 0.0f, 0.0f, 240.0f, 240.0f };
+
+            double camera_correction_angle = 0.0f;
+
+            SDL_RenderTextureRotated(
+                renderer,
+                m_cameraTexture,
+                NULL,       // Source rect (whole image)
+                &dstRect,   // Dest rect (scaled)
+                camera_correction_angle,
+                NULL,
+                SDL_FLIP_NONE
+            );
         }
 
         // --- 2. Read IMU from Blackboard ---

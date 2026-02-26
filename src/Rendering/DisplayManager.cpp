@@ -34,11 +34,19 @@ namespace Rendering {
         //    SDL_Log("Renderer: %s", info.name);
         // }
 
+        m_renderTarget = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_BGR24,
+                                           SDL_TEXTUREACCESS_TARGET,
+                                           config.width, config.height);
+
         SDL_Log("Display Initialized: %dx%d", config.width, config.height);
         return true;
     }
 
     void DisplayManager::Shutdown() {
+        if (m_renderTarget) {
+            SDL_DestroyTexture(m_renderTarget);
+            m_renderTarget = nullptr;
+        }
         if (m_renderer) {
             SDL_DestroyRenderer(m_renderer);
             m_renderer = nullptr;
@@ -50,11 +58,21 @@ namespace Rendering {
     }
 
     void DisplayManager::BeginFrame() {
+        SDL_SetRenderTarget(m_renderer, m_renderTarget);
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
     }
 
     void DisplayManager::EndFrame() {
+        // Go back to the real screen
+        SDL_SetRenderTarget(m_renderer, NULL);
+        SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+        SDL_RenderClear(m_renderer);
+
+        //  rotated by 90 degrees clockwise
+        SDL_FRect dstRect = { 0.0f, 0.0f, 240.0f, 240.0f };
+        SDL_RenderTextureRotated(m_renderer, m_renderTarget, NULL, &dstRect, 90.0, NULL, SDL_FLIP_NONE);
+
         SDL_RenderPresent(m_renderer);
     }
 
