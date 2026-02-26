@@ -14,22 +14,12 @@ int LandmarkDetect::load(bool use_gpu, int num_threads)
 {
     landmark.clear();
 
-    ncnn::set_cpu_powersave(0);
-    // ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
+    // ncnn::set_cpu_powersave(0);
     ncnn::set_omp_num_threads(num_threads);
 
     landmark.opt = ncnn::Option();
 
-// #if __ARM_NEON
-//     landmark.opt.use_fp16_storage = true;
-//     landmark.opt.use_fp16_arithmetic = true;
-//     landmark.opt.use_packing_layout = true;
-// #else
-//     // If compiled on x86, DISABLE FP16 to prevent zero-coordinate bugs
-//     landmark.opt.use_fp16_storage = false;
-//     landmark.opt.use_fp16_arithmetic = false;
-//     landmark.opt.use_packing_layout = false;
-// #endif
+    // DISABLE FP16 to prevent zero-coordinate bugs
     landmark.opt.use_fp16_storage = false;
     landmark.opt.use_fp16_arithmetic = false;
     landmark.opt.use_packing_layout = false;
@@ -38,16 +28,7 @@ int LandmarkDetect::load(bool use_gpu, int num_threads)
     landmark.opt.use_vulkan_compute = use_gpu;
 #endif
 
-    // landmark.opt.num_threads = ncnn::get_big_cpu_count();
     landmark.opt.num_threads = num_threads;
-
-    // char parampath[256];
-    // char modelpath[256];
-    // sprintf(parampath, "%s/%s.param", model_dir, modeltype);
-    // sprintf(modelpath, "%s/%s.bin", model_dir, modeltype);
-    //
-    // landmark.load_param(parampath);
-    // landmark.load_model(modelpath);
 
     landmark.load_param_mem((const char*)models_hand_lite_op_param);
     landmark.load_model(models_hand_lite_op_bin);

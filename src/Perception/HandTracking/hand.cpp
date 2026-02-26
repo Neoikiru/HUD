@@ -333,8 +333,7 @@ int Hand::load(int _target_size, const float* _mean_vals, const float* _norm_val
     blob_pool_allocator.clear();
     workspace_pool_allocator.clear();
 
-    ncnn::set_cpu_powersave(0);
-    // ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
+    // ncnn::set_cpu_powersave(0);
     ncnn::set_omp_num_threads(num_threads);
 
     blazepalm_net.opt = ncnn::Option();
@@ -342,7 +341,6 @@ int Hand::load(int _target_size, const float* _mean_vals, const float* _norm_val
     blazepalm_net.opt.use_vulkan_compute = use_gpu;
 #endif
 
-    // blazepalm_net.opt.num_threads = ncnn::get_big_cpu_count();
     blazepalm_net.opt.num_threads = num_threads;
     blazepalm_net.opt.blob_allocator = &blob_pool_allocator;
     blazepalm_net.opt.workspace_allocator = &workspace_pool_allocator;

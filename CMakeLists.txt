@@ -38,6 +38,10 @@ FetchContent_MakeAvailable(glm)
 set(NCNN_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(NCNN_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(NCNN_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+
+# Disable global workers pool
+set(NCNN_OPENMP OFF CACHE BOOL "Disable OpenMP for NCNN" FORCE)
+
 # Enable GPU acceleration
 set(NCNN_VULKAN ON CACHE BOOL "Enable Vulkan GPU acceleration" FORCE)
 set(NCNN_SYSTEM_GLSLANG ON CACHE BOOL "Use system glslang" FORCE)
