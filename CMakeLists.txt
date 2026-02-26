@@ -42,6 +42,8 @@ set(NCNN_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(NCNN_VULKAN ON CACHE BOOL "Enable Vulkan GPU acceleration" FORCE)
 set(NCNN_SYSTEM_GLSLANG ON CACHE BOOL "Use system glslang" FORCE)
 
+set(NCNN_SYSTEM_GLSLANG OFF CACHE BOOL "Build internal glslang" FORCE)
+
 FetchContent_Declare(
         ncnn
         GIT_REPOSITORY https://github.com/Tencent/ncnn.git
@@ -51,6 +53,9 @@ FetchContent_MakeAvailable(ncnn)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GPIOD REQUIRED IMPORTED_TARGET libgpiod)
+
+pkg_check_modules(OPENCV4 REQUIRED IMPORTED_TARGET opencv4)
+message(STATUS "---- OPENCV PATH: ${OPENCV4_INCLUDE_DIRS} ----")
 
 # --- Manual Libcamera Find ---
 # We use NO_CMAKE_FIND_ROOT_PATH to tell CMake to look exactly where we say
@@ -106,6 +111,7 @@ target_include_directories(hud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Drivers/sh2
     ${GPIOD_INCLUDE_DIRS}
+    ${OPENCV4_INCLUDE_DIRS}
 )
 
 # Link Dependencies
@@ -115,7 +121,11 @@ target_link_libraries(hud PRIVATE
         glm::glm
         LibCamera::LibCamera
         ncnn
+        PkgConfig::OPENCV4
 )
+
+# Copy assets to the build directory so the executable can find them
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if(MSVC)
     target_compile_options(hud PRIVATE /W4)

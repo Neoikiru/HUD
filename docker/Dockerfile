@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y \
     libgpiod-dev:arm64 \
     # Add Vulkan \
     libvulkan-dev:arm64 \
+    # OpenCV \
+    libopencv-dev:arm64 \
     glslang-dev:arm64 \
     glslang-tools:arm64 \
     libpulse-dev:arm64 \
