@@ -117,6 +117,8 @@ add_executable(hud
     src/Drivers/GpioButton.cpp
     src/Drivers/CameraDriver.cpp
 
+    src/Utils/OneEuroFilter.cpp
+
     ${SH2_SOURCES}
 )
 

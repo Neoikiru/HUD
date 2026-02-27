@@ -23,6 +23,9 @@ namespace Perception {
         if (ret != 0) {
             return false;
         }
+
+        InitFilters();
+
         return true;
     }
 
@@ -85,6 +88,20 @@ namespace Perception {
                     frame->stride
                 );
                 m_handTracker->detect(cv_frame, data);
+
+                // Apply filter
+                if (!data.empty()) {
+                    double timestamp_sec = SDL_GetTicksNS() / 1000000000.0;
+
+                    // Filter the first detected hand
+                    PalmObject& hand = data[0];
+                    if (!hand.skeleton.empty()) {
+                        for (size_t i = 0; i < 21; i++) {
+                            hand.skeleton[i].x = filters_x[i]->filter(hand.skeleton[i].x, timestamp_sec);
+                            hand.skeleton[i].y = filters_y[i]->filter(hand.skeleton[i].y, timestamp_sec);
+                        }
+                    }
+                }
 
                 uint64_t latency = (SDL_GetTicks() - startTime);
 
