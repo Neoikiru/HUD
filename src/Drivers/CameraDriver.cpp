@@ -49,6 +49,8 @@ namespace Drivers {
             return false;
         }
 
+        m_lensDistortion.Init(640, 480);
+
         return true;
     }
 
@@ -155,6 +157,8 @@ namespace Drivers {
 
         frame->data = std::make_shared<std::vector<uint8_t>>(len);
         std::memcpy(frame->data->data(), data, len);
+
+        m_lensDistortion.UndistortFrame(frame);
 
         if (m_state) {
             std::lock_guard<std::mutex> lock(m_state->cameraMutex);

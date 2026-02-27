@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include "Core/SharedState.hpp"
+#include "Utils/LensDistortion.hpp"
 
 namespace Drivers {
 
@@ -31,6 +32,9 @@ namespace Drivers {
         // Memory Mapping
         std::map<int, void*> m_mappedBuffers;
         std::map<int, size_t> m_bufferSizes;
+
+        // UnDistort
+        Utils::LensDistortion m_lensDistortion;
     };
 
 }

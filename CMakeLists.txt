@@ -118,6 +118,7 @@ add_executable(hud
     src/Drivers/CameraDriver.cpp
 
     src/Utils/OneEuroFilter.cpp
+    src/Utils/LensDistortion.cpp
 
     ${SH2_SOURCES}
 )
