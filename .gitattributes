@@ -1,2 +1,2 @@
 # Ignore generated model headers in language stats
-assets/model/header/*.h linguist-generated=true
+assets/model/headers/*.h linguist-generated=true

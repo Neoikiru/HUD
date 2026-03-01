@@ -106,6 +106,7 @@ add_executable(hud
     src/Core/ThreadUtils.cpp
 
     src/Rendering/DisplayManager.cpp
+    src/Rendering/ARCamera.cpp
 
     src/Perception/PerceptionService.cpp
 
@@ -119,6 +120,8 @@ add_executable(hud
 
     src/Utils/OneEuroFilter.cpp
     src/Utils/LensDistortion.cpp
+
+    src/UI/DemoCubeWindow.cpp
 
     ${SH2_SOURCES}
 )

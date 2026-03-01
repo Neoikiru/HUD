@@ -2,10 +2,11 @@
 #include <memory>
 #include "Core/Types.hpp"
 #include "Core/SharedState.hpp"
-#include "Rendering/DisplayManager.hpp"
-#include "Perception/PerceptionService.hpp"
 #include "Drivers/GpioButton.hpp"
+#include "Rendering/DisplayManager.hpp"
 #include "Perception/HandTracking/HandTracking.hpp"
+#include "Perception/PerceptionService.hpp"
+#include "UI/SpatialWindow.hpp"
 
 namespace Core {
 
