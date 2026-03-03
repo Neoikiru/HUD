@@ -101,6 +101,7 @@ file(GLOB SH2_SOURCES "src/Drivers/sh2/*.c" "src/Drivers/sh2/*.cpp")
 
 add_executable(hud
     src/main.cpp
+    src/glad.c
 
     src/Core/Engine.cpp
     src/Core/ThreadUtils.cpp
