@@ -11,7 +11,7 @@ public:
     ~HandTrackingWindow() override;
 
     void Init() override;
-    void Update(float deltaTime, const glm::quat& imuRotation) override;
+    void Update(float deltaTime) override;
     void Render(const glm::mat4& viewProjectionMatrix) override;
     void Destroy() override;
 
@@ -29,9 +29,6 @@ private:
     GLuint m_shaderProgram = 0;
     GLint m_mvpLoc = -1;
     GLint m_colorLoc = -1;
-
-    // Helper to map 2D camera pixels to 3D Local Space
-    glm::vec3 MapCameraPixelToLocal3D(const cv::Point2f& pixel, float depthZ);
 
     // The dynamic array of 3D lines we will draw every frame
     std::vector<glm::vec3> m_lineVertices;

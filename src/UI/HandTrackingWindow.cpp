@@ -65,7 +65,8 @@ void HandTrackingWindow::Init() {
 }
 
 
-void HandTrackingWindow::Update(float deltaTime, const glm::quat &imuRotation) {
+void HandTrackingWindow::Update(float deltaTime) {
+    SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "Hand detected, pushing to GPU!");
     transform.position = glm::vec3(0.0f);
     transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     transform.scale = glm::vec3(1.0f);

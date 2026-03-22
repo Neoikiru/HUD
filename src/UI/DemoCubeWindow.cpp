@@ -94,8 +94,7 @@ void DemoCubeWindow::Init() {
     glBindVertexArray(0);
 }
 
-void DemoCubeWindow::Update(float deltaTime, const glm::quat& imuRotation) {
-    m_currentImu = imuRotation;
+void DemoCubeWindow::Update(float deltaTime) {
     glm::quat spin = glm::angleAxis(glm::radians(45.0f * deltaTime), glm::vec3(0.5f, 1.0f, 0.0f));
     transform.rotation = spin * transform.rotation;
 }
@@ -107,75 +106,18 @@ void DemoCubeWindow::Render(const glm::mat4& viewProjectionMatrix) {
     unsigned int mvpLoc = glGetUniformLocation(shaderProgram, "u_MVP");
     unsigned int colorLoc = glGetUniformLocation(shaderProgram, "u_Color");
 
+    // 1. Calculate this specific Cube's position and rotation
     glm::mat4 modelMatrix = transform.GetModelMatrix();
+
+    // 2. Multiply it by whichever "Universe" the Engine passed to us!
     glm::mat4 cubeMVP = viewProjectionMatrix * modelMatrix;
 
+    // 3. Upload and Draw
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &cubeMVP[0][0]);
-    glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f); // Green
+    glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f); // Green Cube
 
     glBindVertexArray(VAO);
     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-
-    // Navigation Arrow Math
-    glm::vec4 clipPos = viewProjectionMatrix * glm::vec4(transform.position, 1.0f);
-    bool isBehind = clipPos.w <= 0.0f;
-    glm::vec3 ndc = glm::vec3(clipPos) / (isBehind ? 0.0001f : clipPos.w);
-
-    if (isBehind || std::abs(ndc.x) > 1.0f || std::abs(ndc.y) > 1.0f) {
-
-        // If the object is behind, flip the X/Y directions
-        // so the arrow points back toward the object
-        glm::vec2 dir;
-        if (isBehind) {
-            dir = glm::normalize(glm::vec2(-clipPos.x, -clipPos.y));
-        } else {
-            dir = glm::normalize(glm::vec2(clipPos.x, clipPos.y));
-        }
-
-        float angle = std::atan2(dir.y, dir.x);
-
-        glm::mat4 arrowModel = glm::mat4(1.0f);
-        // Push it slightly inward from the screen edge
-        arrowModel = glm::translate(arrowModel, glm::vec3(dir.x * 0.85f, dir.y * 0.85f, 0.0f));
-        arrowModel = glm::rotate(arrowModel, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-
-        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &arrowModel[0][0]);
-        glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f); // Bright Red
-
-        glBindVertexArray(arrowVAO);
-        // Draw the 3 points as a solid filled triangle
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
-    }
-
-    glm::mat4 hudProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 10.0f);
-    glm::mat4 hudView = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.2f, -1.0f));
-
-    // Apply the screen rotation to the UI
-    glm::mat4 displayFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    hudView = displayFix * hudView;
-
-    glm::mat4 imuModel = glm::mat4_cast(glm::normalize(m_currentImu));
-    glm::mat4 hudMVP = hudProj * hudView * imuModel;
-
-    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &hudMVP[0][0]);
-    glBindVertexArray(axisVAO);
-
-    // Draw the Main Headset Box (White)
-    glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-    glDrawArrays(GL_LINES, 0, 24); // 12 lines * 2 verts
-
-    //Draw the Camera Lens (Cyan)
-    glUniform4f(colorLoc, 0.0f, 1.0f, 1.0f, 1.0f);
-    glDrawArrays(GL_LINES, 24, 16); // 8 lines * 2 verts
-
-    // Draw the XYZ Axes
-    glUniform4f(colorLoc, 1.0f, 0.0f, 0.0f, 1.0f); // X (Red)
-    glDrawArrays(GL_LINES, 40, 2);
-    glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f); // Y (Green)
-    glDrawArrays(GL_LINES, 42, 2);
-    glUniform4f(colorLoc, 0.0f, 0.0f, 1.0f, 1.0f); // Z (Blue)
-    glDrawArrays(GL_LINES, 44, 2);
-
     glBindVertexArray(0);
 }
 

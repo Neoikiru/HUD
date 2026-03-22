@@ -8,7 +8,7 @@ public:
     ~DemoCubeWindow() override = default;
 
     void Init() override;
-    void Update(float deltaTime, const glm::quat& imuRotation) override;
+    void Update(float deltaTime) override;
     void Render(const glm::mat4& viewProjectionMatrix) override;
     void Destroy() override;
 

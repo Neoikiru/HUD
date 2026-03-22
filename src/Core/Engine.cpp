@@ -3,11 +3,16 @@
 
 #include "UI/DemoCubeWindow.hpp"
 #include "UI/HandTrackingWindow.hpp"
+#include "UI/DebugHUDWindow.hpp"
 
 #include <SDL3/SDL.h>
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+
+#include <imgui.h>
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_opengl3.h>
 
 namespace Core {
     Engine::Engine() : m_isRunning(false) {
@@ -22,6 +27,10 @@ namespace Core {
         for (auto &window: m_windows) {
             window->Destroy();
         }
+
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
 
         m_display.Shutdown();
         SDL_Quit();
@@ -41,6 +50,19 @@ namespace Core {
             return;
         }
 
+        // ==========================================
+        // IMGUI INITIALIZATION
+        // ==========================================
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.IniFilename = nullptr; // Prevents ImGui from creating an imgui.ini file
+        ImGui::StyleColorsDark();
+
+        // Pass the raw SDL Window and GL Context from DisplayManager
+        ImGui_ImplSDL3_InitForOpenGL(m_display.GetWindow(), m_display.GetContexts());
+        ImGui_ImplOpenGL3_Init("#version 300 es");
+
         m_actionButton = std::make_unique<Drivers::GpioButton>(17);
 
         m_perception = std::make_unique<Perception::PerceptionService>(m_state);
@@ -50,14 +72,28 @@ namespace Core {
         m_handTracker->Start();
 
         m_arCamera.Init();
+        // Initialize a few test windows by hand
         // auto demoCube = std::make_unique<DemoCubeWindow>();
         // demoCube->Init();
         // demoCube->setVisible(true);
+        // demoCube->setLockMode(LockMode::Head);
         // m_windows.push_back(std::move(demoCube));
         auto handTrackingWindow = std::make_unique<HandTrackingWindow>(m_state);
         handTrackingWindow->Init();
         handTrackingWindow->setVisible(true);
+        handTrackingWindow->setLockMode(LockMode::World);
         m_windows.push_back(std::move(handTrackingWindow));
+
+        auto debugHud = std::make_unique<DebugHUDWindow>(m_state);
+        debugHud->Init();
+        debugHud->setVisible(true);
+        debugHud->setLockMode(LockMode::Head);
+        m_windows.push_back(std::move(debugHud));
+
+        for (auto &window : m_windows) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Name: %s", typeid(window).name());
+        }
+
 
 
         ThreadUtils::SetThreadName("MainRender");
@@ -89,6 +125,10 @@ namespace Core {
             // 1. Measure HandleInput
             uint64_t t0 = SDL_GetPerformanceCounter();
             HandleInput();
+
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
 
             // 2. Measure Update
             uint64_t t1 = SDL_GetPerformanceCounter();
@@ -135,6 +175,7 @@ namespace Core {
     void Engine::HandleInput() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL3_ProcessEvent(&event);
             if (event.type == SDL_EVENT_QUIT) m_isRunning = false;
             if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE) m_isRunning = false;
         }
@@ -150,7 +191,8 @@ namespace Core {
     void Engine::Update(double dt) {
         m_state->frameTime.store(dt);
 
-        glm::quat currentRot; {
+        glm::quat currentRot;
+        {
             std::lock_guard<std::mutex> lock(m_state->imuMutex);
             currentRot = m_state->orientation;
         }
@@ -159,14 +201,13 @@ namespace Core {
         glm::quat calibratedRot = m_arCamera.GetProcessedRotation();
 
         for (auto &window: m_windows) {
-            window->Update(static_cast<float>(dt), calibratedRot);
+            window->Update(static_cast<float>(dt));
         }
     }
     void Engine::Render() {
         static uint64_t perfFreq = SDL_GetPerformanceFrequency();
         static int frameCount = 0;
         static double accumInput = 0.0;
-        static double accumUpdate = 0.0;
         static double accumRender = 0.0;
         static double accumEndFrame = 0.0;
         static double accumTotal = 0.0;
@@ -176,30 +217,37 @@ namespace Core {
         m_display.BeginFrame();
 
         uint64_t t1 = SDL_GetPerformanceCounter();
-        glm::mat4 vp = m_arCamera.GetViewProjectionMatrix();
-
-        uint64_t t2 = SDL_GetPerformanceCounter();
         for (auto &window: m_windows) {
-            window->Render(vp);
+            if (!window->isVisible()) continue;
+            switch (window->getLockMode()) {
+                case LockMode::World:
+                    window->Render(m_arCamera.GetWorldMVP());
+                    break;
+                case LockMode::Body:
+                    window->Render(m_arCamera.GetBodyMVP());
+                    break;
+                case LockMode::Head:
+                    window->Render(m_arCamera.GetHUDMVP());
+                    break;
+            }
         }
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-
-        uint64_t t3 = SDL_GetPerformanceCounter();
+        uint64_t t2 = SDL_GetPerformanceCounter();
         m_display.EndFrame();
 
-        uint64_t t4 = SDL_GetPerformanceCounter();
+        uint64_t t3 = SDL_GetPerformanceCounter();
 
 
         double frameBeginMs = ((t1 - t0) * 1000.0) / perfFreq;
-        double getViewProjectionMatrixMs = ((t2 - t1) * 1000.0) / perfFreq;
-        double renderWindowsMs = ((t3 - t2) * 1000.0) / perfFreq;
-        double endFrameMs = ((t4 - t3) * 1000.0) / perfFreq;
-        double totalMs = ((t4 - frameStart) * 1000.0) / perfFreq;
+        double renderWindowsMs = ((t2 - t1) * 1000.0) / perfFreq;
+        double endFrameMs = ((t3 - t2) * 1000.0) / perfFreq;
+        double totalMs = ((t3 - frameStart) * 1000.0) / perfFreq;
 
         // Accumulate
         accumInput += frameBeginMs;
-        accumUpdate += getViewProjectionMatrixMs;
         accumRender += renderWindowsMs;
         accumEndFrame += endFrameMs;
         accumTotal += totalMs;
@@ -208,9 +256,8 @@ namespace Core {
         frameCount++;
         if (frameCount >= 60) {
             // SDL_Log(
-            //     "[Telemetry] Avg over 60 frames | FrameBegin: %.3f ms | GetViewProjectionMatrix: %.3f ms | RenderWindows: %.3f ms | endFrame: %.3f ms | Total: %.3f ms (%.1f FPS)",
+            //     "[Telemetry] Avg over 60 frames | FrameBegin: %.3f ms | RenderWindows: %.3f ms | endFrame: %.3f ms | Total: %.3f ms (%.1f FPS)",
             //     accumInput / 60.0,
-            //     accumUpdate / 60.0,
             //     accumRender / 60.0,
             //     accumEndFrame / 60.0,
             //     accumTotal / 60.0,
@@ -266,145 +313,10 @@ namespace Core {
             // Reset accumulators
             frameCount = 0;
             accumInput = 0.0;
-            accumUpdate = 0.0;
             accumRender = 0.0;
             accumEndFrame = 0;
             accumTotal = 0.0;
         }
-
-        // // --- 1. Draw Camera Feed ---
-        // std::shared_ptr<CameraFrame> frame = nullptr; {
-        //     std::lock_guard<std::mutex> lock(m_state->cameraMutex);
-        //     if (!m_state->cameraQueue.empty()) {
-        //         frame = m_state->cameraQueue.back();
-        //         // m_state->cameraQueue.clear();
-        //     }
-        // }
-        //
-        // // If we have a new frame, update the texture
-        // if (frame) {
-        //     if (!m_cameraTexture) {
-        //         // Using BGR24 for correct colors
-        //         m_cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STATIC,
-        //                                             frame->width, frame->height);
-        //         SDL_Log("Created Texture: %p (%dx%d)", (void *) m_cameraTexture, frame->width, frame->height);
-        //     }
-        //
-        //     if (m_cameraTexture) {
-        //         SDL_UpdateTexture(m_cameraTexture, NULL, frame->data->data(), frame->stride);
-        //     }
-        // }
-        //
-        // // Always draw the texture if it exists (persisting the last frame if no new one arrived)
-        // if (m_cameraTexture) {
-        //     SDL_FRect dstRect = { 0.0f, 0.0f, 240.0f, 240.0f };
-        //
-        //     double camera_correction_angle = 0.0f;
-        //
-        //     SDL_RenderTextureRotated(
-        //         renderer,
-        //         m_cameraTexture,
-        //         NULL,       // Source rect (whole image)
-        //         &dstRect,   // Dest rect (scaled)
-        //         camera_correction_angle,
-        //         NULL,
-        //         SDL_FLIP_NONE
-        //     );
-        // }
-        //
-        // // --- 2. Read IMU from Blackboard ---
-        // glm::quat currentRot; {
-        //     std::lock_guard<std::mutex> lock(m_state->imuMutex);
-        //     currentRot = m_state->orientation;
-        // }
-        // float ax = m_state->linearAccelX.load();
-        // float ay = m_state->linearAccelY.load();
-        // float az = m_state->linearAccelZ.load();
-        //
-        // // --- 3. Visualization ---
-        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        //
-        // auto renderLine = [&](int lineNum, const std::string &text) {
-        //     SDL_RenderDebugText(renderer, 10.0f, 10.0f + (lineNum * 15.0f), text.c_str());
-        // };
-        //
-        // std::stringstream ss;
-        // ss << std::fixed << std::setprecision(2);
-        //
-        // ss.str("");
-        // ss << "W:" << currentRot.w << " X:" << currentRot.x;
-        // renderLine(0, ss.str());
-        //
-        // ss.str("");
-        // ss << "Y:" << currentRot.y << " Z:" << currentRot.z;
-        // renderLine(1, ss.str());
-        //
-        // ss.str("");
-        // ss << "Acc: " << ax << ", " << ay << ", " << az;
-        // renderLine(2, ss.str());
-        //
-        // float angle = currentRot.z * 3.14f;
-        // float cx = 120.0f;
-        // float cy = 120.0f;
-        // float length = 80.0f;
-        // float x1 = cx + length * cos(angle);
-        // float y1 = cy + length * sin(angle);
-        // float x2 = cx - length * cos(angle);
-        // float y2 = cy - length * sin(angle);
-        //
-        // SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        // SDL_RenderLine(renderer, x1, y1, x2, y2);
-        //
-        // std::vector<PalmObject> local_render_hands;
-        // {
-        //     std::lock_guard<std::mutex> lock(m_state->handMutex);
-        //     local_render_hands = m_state->objects;
-        // }
-        // uint64_t current_latency = m_state->inferenceLatency.load();
-        //
-        // const float scale_x = 240.0f / 640.0f;
-        // const float scale_y = 240.0f / 480.0f;
-        //
-        // // Draw the Hand Landmarks
-        // for (const auto &hand: local_render_hands) {
-        //
-        //     // Only draw if the network is confident
-        //     if (hand.score < 0.5f) continue;
-        //
-        //     // Set color to bright green for the dots
-        //     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        //
-        //     // Loop through all 21 joints
-        //     for (size_t i = 0; i < hand.skeleton.size(); i++) {
-        //         // SDL_Log("Coords| X: %f | Y: %f", hand.skeleton[i].x, hand.skeleton[i].y);
-        //
-        //         // Map camera coordinates to 240x240 screen
-        //         float screen_x = hand.skeleton[i].x * scale_x;
-        //         float screen_y = hand.skeleton[i].y * scale_y;
-        //
-        //         // Draw a 4x4 pixel dot for each landmark (centered on the coordinate)
-        //         float dot_size = 4.0f;
-        //         SDL_FRect dot = {
-        //             screen_x - (dot_size / 2.0f),
-        //             screen_y - (dot_size / 2.0f),
-        //             dot_size,
-        //             dot_size
-        //         };
-        //         SDL_RenderFillRect(renderer, &dot);
-        //     }
-        // }
-        //
-        // char stat_text[64];
-        // snprintf(stat_text, sizeof(stat_text), "Infer: %llu ms | Hands: %zu",
-        //          (unsigned long long) current_latency, local_render_hands.size());
-        //
-        // // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
-        // // SDL_FRect text_bg = {2.0f, 20.0f, 180.0f, 14.0f};
-        // // SDL_RenderFillRect(renderer, &text_bg);
-        //
-        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        // SDL_RenderDebugText(renderer, 5.0f, 60.0f, stat_text);
-
 
     }
 }
