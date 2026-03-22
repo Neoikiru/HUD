@@ -121,9 +121,10 @@ namespace Rendering {
 
         // THE SCREEN FIX
         glm::mat4 displayFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 hudOrtho = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
         m_worldMVP = m_projectionMatrix * displayFix * worldView;
-        m_bodyMVP = m_projectionMatrix * displayFix * bodyView;
-        m_hudMVP = m_projectionMatrix * displayFix * hudView;
+        m_bodyMVP  = m_projectionMatrix * displayFix * bodyView;
+        m_hudMVP   = hudOrtho * displayFix * hudView;
     }
 }

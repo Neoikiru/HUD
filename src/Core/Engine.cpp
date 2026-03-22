@@ -89,7 +89,7 @@ namespace Core {
         auto debugHud = std::make_unique<DebugHUDWindow>(m_state);
         debugHud->Init();
         debugHud->setVisible(true);
-        debugHud->setLockMode(LockMode::Head);
+        debugHud->setLockMode(LockMode::World);
         m_windows.push_back(std::move(debugHud));
 
 
@@ -222,9 +222,6 @@ namespace Core {
                     break;
             }
         }
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         uint64_t t2 = SDL_GetPerformanceCounter();
         m_display.EndFrame();
