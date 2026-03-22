@@ -5,6 +5,22 @@
 #include <SDL3/SDL_timer.h>
 
 namespace Perception {
+
+    glm::vec3 MapCameraPixelToLocal3D(const cv::Point2f& pixel, float depthZ) {
+        const float cam_fx = 470.326f;  const float cam_fy = 462.444f;
+        const float cam_cx = 307.401f;  const float cam_cy = 232.849f;
+
+        // Pure optics. No artificial scale factors
+        float ray_x = (pixel.x - cam_cx) / cam_fx;
+        float ray_y = (pixel.y - cam_cy) / cam_fy;
+
+        glm::vec3 cam3D(ray_x * depthZ, ray_y * depthZ, depthZ);
+        glm::vec3 eyeOffset(-0.0554f, -0.0092f, 0.0580f);
+        glm::vec3 local3D = cam3D - eyeOffset;
+
+        return glm::vec3(local3D.x, -local3D.y, -local3D.z);
+    }
+
     HandTracker::HandTracker(const std::shared_ptr<Core::SharedState> &state)
         : m_state(state) {
     }
@@ -65,7 +81,8 @@ namespace Perception {
         // Main loop
         while (m_running) {
             // Get frame
-            std::shared_ptr<Core::CameraFrame> frame = nullptr; {
+            std::shared_ptr<Core::CameraFrame> frame = nullptr;
+            {
                 std::lock_guard<std::mutex> lock(m_state->cameraMutex);
                 if (!m_state->cameraQueue.empty()) {
                     frame = m_state->cameraQueue.back();
@@ -89,6 +106,10 @@ namespace Perception {
                 );
                 m_handTracker->detect(cv_frame, data);
 
+                glm::vec3 calculatedWorldPointer(0.0f);
+                glm::vec3 calculatedWorldWrist(0.0f);
+                bool validWorldPointer = false;
+
                 // Apply filter
                 if (!data.empty()) {
                     double timestamp_sec = SDL_GetTicksNS() / 1000000000.0;
@@ -101,7 +122,35 @@ namespace Perception {
                             hand.skeleton[i].y = filters_y[i]->filter(hand.skeleton[i].y, timestamp_sec);
                         }
                     }
+
+                    // Calculate local 3D position squeeze
+                    constexpr float safeDepthMeters = 0.30f; // Random magic number that works "fine"
+                    glm::vec3 wrist = MapCameraPixelToLocal3D(hand.skeleton[0], safeDepthMeters);
+                    glm::vec3 indexTip = MapCameraPixelToLocal3D(hand.skeleton[8], safeDepthMeters);
+
+                    constexpr float squeezeFactor = 0.8f;
+                    glm::vec3 localPointer = wrist + (indexTip - wrist) * squeezeFactor;
+
+                    // Move pointer from the Local to World position
+                    glm::quat headRotation;
+                    {
+                        std::lock_guard lock(m_state->imuMutex);
+                        headRotation = m_state->orientation;
+                    }
+
+                    // No slam for not, so:
+                    glm::vec3 slamPos;
+                    {
+                        std::lock_guard lock(m_state->slamMtx);
+                        slamPos = m_state->slamPosition;
+                    }
+
+                    calculatedWorldPointer = slamPos + (headRotation * localPointer);
+                    calculatedWorldWrist = slamPos + (headRotation * wrist);
+                    validWorldPointer = true;
                 }
+
+
 
                 uint64_t latency = (SDL_GetTicks() - startTime);
 
@@ -109,6 +158,9 @@ namespace Perception {
                 {
                     std::lock_guard<std::mutex> lock(m_state->handMutex);
                     m_state->objects = std::move(data);
+                    m_state->worldPointer = calculatedWorldPointer;
+                    m_state->worldWrist = calculatedWorldWrist;
+                    m_state->isPointerActive = validWorldPointer;
                 }
                 m_state->inferenceLatency.store(latency);
 

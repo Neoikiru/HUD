@@ -27,6 +27,10 @@ namespace Core {
         std::atomic<float> linearAccelY{0.0f};
         std::atomic<float> linearAccelZ{0.0f};
 
+        // --- SLAM position ---
+        std::mutex slamMtx;
+        glm::vec3 slamPosition{0.0f};
+
         // --- Button State --
         std::atomic<bool> isHeld{false};
         std::atomic<bool> isPressed{false};
@@ -47,6 +51,11 @@ namespace Core {
         std::mutex handMutex;
         std::vector<PalmObject> objects;
         std::atomic<uint64_t> inferenceLatency = 0;
+
+        // World pointer (Index fingertip, approximated depth)
+        glm::vec3 worldPointer = glm::vec3(0.0f);
+        glm::vec3 worldWrist = glm::vec3(0.0f);
+        bool isPointerActive = false;
 
         // --- System State ---
         std::atomic<bool> isRunning{true};
