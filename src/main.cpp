@@ -1,9 +1,13 @@
 #include "Core/Engine.hpp"
 #include <iostream>
 
+#include "Utils/Logger.hpp"
+
 int main(int argc, char* argv[]) {
     (void)argc; (void)argv;
     try {
+        Core::Logger::Init();
+
         Core::Engine app;
         
         Core::EngineConfig config;
