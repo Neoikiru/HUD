@@ -21,14 +21,18 @@ namespace Rendering {
         void ResetCalibration() { m_calibState = CalibrationState::NeedsCenter; }
 
         // Getters
-        const glm::mat4& GetViewProjectionMatrix() const { return m_viewProjectionMatrix; }
-        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
         const glm::mat4& GetProjectionMatrix() const { return m_projectionMatrix; }
         glm::quat GetProcessedRotation() const { return m_processedRotation; }
+
+        const glm::mat4& GetWorldMVP() const { return m_worldMVP; }
+        const glm::mat4& GetBodyMVP() const  { return m_bodyMVP; }
+        const glm::mat4& GetHUDMVP() const   { return m_hudMVP; }
     private:
-        glm::mat4 m_viewProjectionMatrix;
-        glm::mat4 m_ViewMatrix;
         glm::mat4 m_projectionMatrix;
+
+        glm::mat4 m_worldMVP;
+        glm::mat4 m_bodyMVP;
+        glm::mat4 m_hudMVP;
 
         CalibrationState m_calibState = CalibrationState::NeedsCenter;
 

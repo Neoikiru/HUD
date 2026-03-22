@@ -4,6 +4,13 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
+enum class LockMode {
+    World, // Anchored to the physical room (SLAM Translation + IMU Rotation)
+    Body,  // Lazy follow (NO SLAM + IMU)
+    Head   // Glued to eyeball (NO SLAM, NO IMU)
+};
+
 struct Transform {
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -22,12 +29,17 @@ struct Transform {
 
 class SpatialWindow {
 public:
-    SpatialWindow() : m_isVisible(false) {};
+    SpatialWindow() : m_lockMode(LockMode::World), m_isVisible(false) {
+    };
+
     virtual ~SpatialWindow() = default;
 
     virtual void Init() = 0;
-    virtual void Update(float deltaTime, const glm::quat& imuRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f)) = 0;
-    virtual void Render(const glm::mat4& viewProjectionMatrix) = 0;
+
+    virtual void Update(float deltaTime) = 0;
+
+    virtual void Render(const glm::mat4 &viewProjectionMatrix) = 0;
+
     virtual void Destroy() = 0;
 
     Transform transform;
@@ -35,6 +47,10 @@ public:
     void setVisible(const bool visible) { m_isVisible = visible; }
     bool isVisible() const { return m_isVisible; }
 
+    void setLockMode(const LockMode newLockMode) { m_lockMode = newLockMode; }
+    LockMode getLockMode() const { return m_lockMode; }
+
 protected:
+    LockMode m_lockMode;
     bool m_isVisible;
 };
