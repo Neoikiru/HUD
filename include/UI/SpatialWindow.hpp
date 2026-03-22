@@ -26,7 +26,7 @@ public:
     virtual ~SpatialWindow() = default;
 
     virtual void Init() = 0;
-    virtual void Update(float deltaTime) = 0;
+    virtual void Update(float deltaTime, const glm::quat& imuRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f)) = 0;
     virtual void Render(const glm::mat4& viewProjectionMatrix) = 0;
     virtual void Destroy() = 0;
 

@@ -123,6 +123,7 @@ add_executable(hud
     src/Utils/LensDistortion.cpp
 
     src/UI/DemoCubeWindow.cpp
+    src/UI/HandTrackingWindow.cpp
 
     ${SH2_SOURCES}
 )

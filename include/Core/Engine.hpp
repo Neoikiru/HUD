@@ -6,6 +6,7 @@
 #include "Rendering/DisplayManager.hpp"
 #include "Perception/HandTracking/HandTracking.hpp"
 #include "Perception/PerceptionService.hpp"
+#include "Rendering/ARCamera.hpp"
 #include "UI/SpatialWindow.hpp"
 
 namespace Core {
@@ -36,6 +37,9 @@ namespace Core {
         
         SDL_Texture* m_cameraTexture = nullptr;
         std::vector<uint32_t> m_conversionBuffer;
+
+        Rendering::ARCamera m_arCamera;
+        std::vector<std::unique_ptr<SpatialWindow>> m_windows;
     };
 
 }

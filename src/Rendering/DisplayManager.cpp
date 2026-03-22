@@ -1,7 +1,6 @@
+#include "glad/glad.h"
 #include "Rendering/DisplayManager.hpp"
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_render.h>
-#include <stdexcept>
 
 namespace Rendering {
 
@@ -12,44 +11,60 @@ namespace Rendering {
     }
 
     bool DisplayManager::Init(const DisplayConfig& config) {
-        Uint32 flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
+        // Use OpenGL ES 3.0
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+        // Request depth buffer
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+        // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+        // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+        // prepare flags for SDL
+        Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
         if (config.fullscreen) flags |= SDL_WINDOW_FULLSCREEN;
 
-        m_window = SDL_CreateWindow(config.title.c_str(), config.width, config.height, flags);
+        // Create window
+        m_window = SDL_CreateWindow(config.title.c_str(), config.width, config.height ,flags);
         if (!m_window) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Window creation failed: %s", SDL_GetError());
             return false;
         }
 
-        m_renderer = SDL_CreateRenderer(m_window, NULL); 
-        
-        if (!m_renderer) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Renderer creation failed: %s", SDL_GetError());
+        // Create OpenGL context
+        m_glContext = SDL_GL_CreateContext(m_window);
+        if (!m_glContext) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "OpenGL Context creation failed: %s", SDL_GetError());
             return false;
         }
 
-        // Log Renderer Info
-        // SDL_RendererInfo info;
-        // if (SDL_GetRendererInfo(m_renderer, &info) == 0) {
-        //    SDL_Log("Renderer: %s", info.name);
-        // }
+        if (!gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress)) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to initialize GLAD/OpenGL pointers!");
+            return false;
+        }
+        SDL_Log("OpenGL Loaded! Vendor: %s", glGetString(GL_VENDOR));
+        SDL_Log("OpenGL Renderer: %s", glGetString(GL_RENDERER));
+        SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
 
-        m_renderTarget = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_BGR24,
-                                           SDL_TEXTUREACCESS_TARGET,
-                                           config.width, config.height);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
 
-        SDL_Log("Display Initialized: %dx%d", config.width, config.height);
+        // VSync off
+        SDL_GL_SetSwapInterval(0);
+
+        SDL_Log("OpenGL Display Initialized: %dx%d", config.width, config.height);
         return true;
     }
 
     void DisplayManager::Shutdown() {
-        if (m_renderTarget) {
-            SDL_DestroyTexture(m_renderTarget);
-            m_renderTarget = nullptr;
-        }
-        if (m_renderer) {
-            SDL_DestroyRenderer(m_renderer);
-            m_renderer = nullptr;
+        if (m_glContext) {
+            SDL_GL_DestroyContext(m_glContext);
+            m_glContext = nullptr;
         }
         if (m_window) {
             SDL_DestroyWindow(m_window);
@@ -58,22 +73,13 @@ namespace Rendering {
     }
 
     void DisplayManager::BeginFrame() {
-        SDL_SetRenderTarget(m_renderer, m_renderTarget);
-        SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-        SDL_RenderClear(m_renderer);
+        glViewport(0, 0, 240, 240);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void DisplayManager::EndFrame() {
-        // Go back to the real screen
-        SDL_SetRenderTarget(m_renderer, NULL);
-        SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-        SDL_RenderClear(m_renderer);
-
-        //  rotated by 90 degrees clockwise
-        SDL_FRect dstRect = { 0.0f, 0.0f, 240.0f, 240.0f };
-        SDL_RenderTextureRotated(m_renderer, m_renderTarget, NULL, &dstRect, 90.0, NULL, SDL_FLIP_NONE);
-
-        SDL_RenderPresent(m_renderer);
+        SDL_GL_SwapWindow(m_window);
     }
 
 }

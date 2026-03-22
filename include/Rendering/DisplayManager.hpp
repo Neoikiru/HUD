@@ -22,12 +22,11 @@ namespace Rendering {
         void EndFrame();
 
         SDL_Window* GetWindow() const { return m_window; }
-        SDL_Renderer* GetRenderer() const { return m_renderer; }
 
     private:
         SDL_Window* m_window = nullptr;
-        SDL_Renderer* m_renderer = nullptr;
-        SDL_Texture* m_renderTarget = nullptr;
+
+        SDL_GLContext m_glContext = nullptr;
     };
 
 }
