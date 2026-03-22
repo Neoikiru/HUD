@@ -43,6 +43,23 @@ namespace Drivers {
     }
 
     bool BNO08xDriver::Init() {
+        // 0. Hardware reset
+        SDL_Log("Performing Physical Hardware Reset on GPIO 26...");
+
+        // Force the pin to be an Output and drive it LOW to kill the sensor
+        int ret = system("pinctrl set 26 op pn dl");
+        if (ret != 0) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "pinctrl command failed.");
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Clear buffers
+
+        // Drive HIGH to boot the sensor
+        system("pinctrl set 26 op pn dh");
+
+        // The BNO08x takes ~600ms to boot up
+        std::this_thread::sleep_for(std::chrono::milliseconds(600));
+        SDL_Log("BNO08x Hardware Booted.");
+
         // 1. Open I2C
         m_fileDescriptor = open(m_device.c_str(), O_RDWR);
         if (m_fileDescriptor < 0) {
@@ -65,30 +82,30 @@ namespace Drivers {
 
         // --- FLUSH ---
         // Drain any pending data from previous run/boot
-        SDL_Log("Flushing I2C...");
-        uint8_t dummy[512];
-        for (int i=0; i<50; ++i) {
-            if (m_hal.read(NULL, dummy, sizeof(dummy), NULL) == 0) {
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
+        // SDL_Log("Flushing I2C...");
+        // uint8_t dummy[512];
+        // for (int i=0; i<50; ++i) {
+        //     if (m_hal.read(NULL, dummy, sizeof(dummy), NULL) == 0) {
+        //         break;
+        //     }
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // }
 
         // --- MANUAL SOFT RESET ---
         // Send SHTP Executable (Ch 1) Command 1 (Reset)
         // Header: Len=5 (4+1), Ch=1, Seq=0
         // Data: 1
-        SDL_Log("Forcing Soft Reset...");
-        uint8_t resetPkt[] = { 
-            0x05, 0x00, // Length 5
-            0x01,       // Channel 1 (Executable)
-            0x00,       // Seq 0
-            0x01        // Command 1 (Reset)
-        };
-        write(m_fileDescriptor, resetPkt, sizeof(resetPkt));
+        // SDL_Log("Forcing Soft Reset...");
+        // uint8_t resetPkt[] = {
+        //     0x05, 0x00, // Length 5
+        //     0x01,       // Channel 1 (Executable)
+        //     0x00,       // Seq 0
+        //     0x01        // Command 1 (Reset)
+        // };
+        // write(m_fileDescriptor, resetPkt, sizeof(resetPkt));
         
         // Wait for reset to complete and advertisement to appear
-        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(300));
         // -------------------------
 
         // 3. Open SH2
@@ -111,15 +128,15 @@ namespace Drivers {
                 prodIds.entry[0].swPartNumber, 
                 prodIds.entry[0].swVersionMajor, prodIds.entry[0].swVersionMinor, prodIds.entry[0].swVersionPatch);
         } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Failed to read Product IDs: %d", status);
+            SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to read Product IDs: %d", status);
         }
 
         // 6. Enable Reports
         SDL_Log("Enabling Game Rotation Vector...");
-        EnableReport(SH2_GAME_ROTATION_VECTOR, 50000); // 50ms
+        EnableReport(SH2_GAME_ROTATION_VECTOR, 10000); // 10ms
 
         SDL_Log("Enabling Linear Acceleration...");
-        EnableReport(SH2_LINEAR_ACCELERATION, 50000);
+        EnableReport(SH2_LINEAR_ACCELERATION, 10000);
 
         SDL_Log("BNO08x Initialized (SH2)");
         return true;
