@@ -3,11 +3,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Rendering {
-    ARCamera::ARCamera() : m_projectionMatrix(1.0f), m_worldMVP(1.0f), m_bodyMVP(1.0f), m_hudMVP(1.0f) {
+    ARCamera::ARCamera() : m_projectionMatrix(1.0f), m_worldMVP(1.0f),
+                                                                   m_bodyMVP(1.0f), m_hudMVP(1.0f) {
     }
 
 
-    void ARCamera::Init() {
+    void ARCamera::Init(const std::shared_ptr<Core::SharedState> &state) {
+        m_state = state;
+
         // ARUCO OPTICAL CALIBRATION (OpenCV to OpenGL)
         m_projectionMatrix = glm::mat4(0.0f); // Initialize to empty
 
@@ -34,11 +37,28 @@ namespace Rendering {
         glm::mat4 defaultView = displayFix * glm::mat4(1.0f);
 
         m_worldMVP = m_projectionMatrix * defaultView;
-        m_bodyMVP  = m_projectionMatrix * defaultView;
-        m_hudMVP   = m_projectionMatrix * defaultView;
+        m_bodyMVP = m_projectionMatrix * defaultView;
+        m_hudMVP = m_projectionMatrix * defaultView;
     }
 
-    void ARCamera::Update(const glm::quat &rawImuRotation, const glm::vec3 &slamTranslation) { // <-- THE MOST HATED THING IN THIS PROJECT
+    void ARCamera::Update() { // <-- THE MOST HATED THING IN THIS PROJECT
+        if (!m_state) {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "State Not Initialized in Ar Camera!");
+            return;
+        }
+
+        glm::quat rawImuRotation;
+        {
+            std::lock_guard lock(m_state->imuMutex);
+            rawImuRotation = m_state->orientation;
+        }
+
+        glm::vec3 slamTranslation;
+        {
+            std::lock_guard lock(m_state->slamMtx);
+            slamTranslation = m_state->slamPosition;
+        }
+
         // RAW BNO08x AXES
         glm::quat imu = glm::normalize(rawImuRotation);
         glm::vec3 bnoX = imu * glm::vec3(1.0f, 0.0f, 0.0f);
@@ -80,6 +100,12 @@ namespace Rendering {
         glm::quat worldCamRot = glm::inverse(m_tareRotation) * ergonomicImu;
         m_processedRotation = worldCamRot;
 
+        // Save calibrated rotation
+        {
+            std::lock_guard lock(m_state->imuMutex);
+            m_state->headRotation = m_processedRotation;
+        }
+
         // VIEW MATRICES
         glm::vec3 finalFwd = worldCamRot * glm::vec3(0.0f, 0.0f, -1.0f);
         glm::vec3 finalUp = worldCamRot * glm::vec3(0.0f, 1.0f, 0.0f);
@@ -97,7 +123,7 @@ namespace Rendering {
         glm::mat4 displayFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         m_worldMVP = m_projectionMatrix * displayFix * worldView;
-        m_bodyMVP  = m_projectionMatrix * displayFix * bodyView;
-        m_hudMVP   = m_projectionMatrix * displayFix * hudView;
+        m_bodyMVP = m_projectionMatrix * displayFix * bodyView;
+        m_hudMVP = m_projectionMatrix * displayFix * hudView;
     }
 }

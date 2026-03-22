@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include "Core/SharedState.hpp"
+
 namespace Rendering {
 
     class ARCamera {
@@ -10,9 +12,9 @@ namespace Rendering {
         ARCamera();
         ~ARCamera() = default;
 
-        void Init();
+        void Init(const std::shared_ptr<Core::SharedState> &state);
 
-        void Update(const glm::quat& rawImuRotation, const glm::vec3& slamTranslation);
+        void Update();
 
         enum class CalibrationState {
             NeedsCenter,
@@ -28,6 +30,9 @@ namespace Rendering {
         const glm::mat4& GetBodyMVP() const  { return m_bodyMVP; }
         const glm::mat4& GetHUDMVP() const   { return m_hudMVP; }
     private:
+        std::shared_ptr<Core::SharedState> m_state;
+
+
         glm::mat4 m_projectionMatrix;
 
         glm::mat4 m_worldMVP;

@@ -74,6 +74,10 @@ namespace Rendering {
 
     void DisplayManager::BeginFrame() {
         glViewport(0, 0, 240, 240);
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }

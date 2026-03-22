@@ -38,7 +38,8 @@ namespace Core {
 
         // Quaternions are 4 floats; need mutex
         std::mutex imuMutex;
-        glm::quat orientation{1,0,0,0}; 
+        glm::quat orientation{1,0,0,0}; // Raw IMU hardware
+        glm::quat headRotation{1.0f, 0.0f, 0.0f, 0.0f}; // Processed IMU from ArCamera
         uint8_t imuAccuracy = 0;
 
         // --- Camera Data ---

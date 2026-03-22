@@ -135,7 +135,7 @@ namespace Perception {
                     glm::quat headRotation;
                     {
                         std::lock_guard lock(m_state->imuMutex);
-                        headRotation = m_state->orientation;
+                        headRotation = m_state->headRotation;
                     }
 
                     // No slam for not, so:

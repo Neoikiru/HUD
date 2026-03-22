@@ -17,10 +17,10 @@ void HandTrackingWindow::Init() {
         #version 300 es
         layout (location = 0) in vec3 aPos;
         uniform mat4 u_MVP;
-        uniform float u_PointSize; // <-- NEW
+        uniform float u_PointSize;
         void main() {
             gl_Position = u_MVP * vec4(aPos, 1.0);
-            gl_PointSize = u_PointSize; // <-- NEW
+            gl_PointSize = u_PointSize;
         }
     )";
 
@@ -34,18 +34,38 @@ void HandTrackingWindow::Init() {
         }
     )";
 
+    auto checkShader = [](GLuint shader, const std::string& type) {
+        GLint success;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            char infoLog[1024];
+            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shader Compilation Error (%s):\n%s", type.c_str(), infoLog);
+        }
+    };
+
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
+    checkShader(vertexShader, "VERTEX");
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
+    checkShader(fragmentShader, "FRAGMENT");
 
     m_shaderProgram = glCreateProgram();
     glAttachShader(m_shaderProgram, vertexShader);
     glAttachShader(m_shaderProgram, fragmentShader);
     glLinkProgram(m_shaderProgram);
+
+    GLint success;
+    glGetProgramiv(m_shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        char infoLog[1024];
+        glGetProgramInfoLog(m_shaderProgram, 1024, NULL, infoLog);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shader Program Link Error:\n%s", infoLog);
+    }
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -53,6 +73,10 @@ void HandTrackingWindow::Init() {
     m_mvpLoc = glGetUniformLocation(m_shaderProgram, "u_MVP");
     m_colorLoc = glGetUniformLocation(m_shaderProgram, "u_Color");
     m_pointSizeLoc = glGetUniformLocation(m_shaderProgram, "u_PointSize");
+
+    if (m_mvpLoc == -1 || m_colorLoc == -1 || m_pointSizeLoc == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find uniform locations in HandTrackingWindow! MVP:%d Color:%d PointSize:%d", m_mvpLoc, m_colorLoc, m_pointSizeLoc);
+    }
 
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
@@ -62,11 +86,11 @@ void HandTrackingWindow::Init() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *) 0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "HandTrackingWindow Initialized!");
 }
 
 
 void HandTrackingWindow::Update(float deltaTime) {
-    SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "Hand detected, pushing to GPU!");
     transform.position = glm::vec3(0.0f);
     transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     transform.scale = glm::vec3(1.0f);

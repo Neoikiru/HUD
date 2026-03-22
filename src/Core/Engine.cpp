@@ -55,12 +55,13 @@ namespace Core {
         // ==========================================
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGuiIO &io = ImGui::GetIO();
+        (void) io;
         io.IniFilename = nullptr; // Prevents ImGui from creating an imgui.ini file
         ImGui::StyleColorsDark();
 
         // Pass the raw SDL Window and GL Context from DisplayManager
-        ImGui_ImplSDL3_InitForOpenGL(m_display.GetWindow(), m_display.GetContexts());
+        ImGui_ImplSDL3_InitForOpenGL(m_display.GetWindow(), m_display.GetContext());
         ImGui_ImplOpenGL3_Init("#version 300 es");
 
         m_actionButton = std::make_unique<Drivers::GpioButton>(17);
@@ -71,13 +72,14 @@ namespace Core {
         m_handTracker = std::make_unique<Perception::HandTracker>(m_state);
         m_handTracker->Start();
 
-        m_arCamera.Init();
+        m_arCamera.Init(m_state);
         // Initialize a few test windows by hand
-        // auto demoCube = std::make_unique<DemoCubeWindow>();
-        // demoCube->Init();
-        // demoCube->setVisible(true);
-        // demoCube->setLockMode(LockMode::Head);
-        // m_windows.push_back(std::move(demoCube));
+        auto demoCube = std::make_unique<DemoCubeWindow>();
+        demoCube->Init();
+        demoCube->setVisible(true);
+        demoCube->setLockMode(LockMode::World);
+        m_windows.push_back(std::move(demoCube));
+
         auto handTrackingWindow = std::make_unique<HandTrackingWindow>(m_state);
         handTrackingWindow->Init();
         handTrackingWindow->setVisible(true);
@@ -89,11 +91,6 @@ namespace Core {
         debugHud->setVisible(true);
         debugHud->setLockMode(LockMode::Head);
         m_windows.push_back(std::move(debugHud));
-
-        for (auto &window : m_windows) {
-            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Name: %s", typeid(window).name());
-        }
-
 
 
         ThreadUtils::SetThreadName("MainRender");
@@ -191,19 +188,13 @@ namespace Core {
     void Engine::Update(double dt) {
         m_state->frameTime.store(dt);
 
-        glm::quat currentRot;
-        {
-            std::lock_guard<std::mutex> lock(m_state->imuMutex);
-            currentRot = m_state->orientation;
-        }
-
-        m_arCamera.Update(currentRot, glm::vec3(0.0f, 0.0f, 0.0f));
-        glm::quat calibratedRot = m_arCamera.GetProcessedRotation();
+        m_arCamera.Update();
 
         for (auto &window: m_windows) {
             window->Update(static_cast<float>(dt));
         }
     }
+
     void Engine::Render() {
         static uint64_t perfFreq = SDL_GetPerformanceFrequency();
         static int frameCount = 0;
@@ -269,7 +260,7 @@ namespace Core {
             // }
 
 
-            static auto DebugLogPalmObject = [](const PalmObject& palm, int index = 0) {
+            static auto DebugLogPalmObject = [](const PalmObject &palm, int index = 0) {
                 SDL_Log("========== PALM OBJECT [%d] ==========", index);
 
                 // Basic Floats & OpenCV Rect
@@ -317,6 +308,5 @@ namespace Core {
             accumEndFrame = 0;
             accumTotal = 0.0;
         }
-
     }
 }
