@@ -123,11 +123,36 @@ namespace Perception {
                         }
                     }
 
-                    // Calculate local 3D position squeeze
-                    constexpr float safeDepthMeters = 0.30f; // Random magic number that works "fine"
+                    // Calculate local 3D position base (Flat plane at 30cm)
+                    constexpr float safeDepthMeters = 0.20f;
                     glm::vec3 wrist = MapCameraPixelToLocal3D(hand.skeleton[0], safeDepthMeters);
                     glm::vec3 indexTip = MapCameraPixelToLocal3D(hand.skeleton[8], safeDepthMeters);
 
+
+                    // 2D to 3D  heuristics
+                    glm::vec2 wristXY(wrist.x, wrist.y);
+                    glm::vec2 indexXY(indexTip.x, indexTip.y);
+
+                    // Measure the distance in meters on the flat X/Y plane
+                    float currentLengthMeters = glm::distance(wristXY, indexXY);
+
+                    // Anatomical Constant ~18cm from wrist to index tip
+                    const float MAX_FLAT_LENGTH = 0.18f;
+
+                    // Calculate ratio (prevent NaN crashes if the AI hallucinates a long hand)
+                    float ratio = currentLengthMeters / MAX_FLAT_LENGTH;
+                    ratio = glm::clamp(ratio, 0.0f, 1.0f);
+
+                    // Calculate the missing Z-angle
+                    float zAngle = std::acos(ratio);
+
+                    // Calculate the missing Z-depth
+                    float zOffset = -std::sin(zAngle) * MAX_FLAT_LENGTH;
+
+                    // Push the index tip into the depth plane
+                    indexTip.z += zOffset;
+
+                    // Apply the squeeze factor
                     constexpr float squeezeFactor = 0.8f;
                     glm::vec3 localPointer = wrist + (indexTip - wrist) * squeezeFactor;
 
