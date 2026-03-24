@@ -61,21 +61,20 @@ namespace Perception {
     }
 
     void HandTracker::WorkerLoop() {
-
+        Core::ThreadUtils::SetThreadName("HandTracker");
         cv::setNumThreads(1);
 
-        SDL_Log("Hand Tracker Thread Started on Core 2");
+        SDL_Log("[HandTracking] Hand Tracker Thread Started on Core 2");
 
         // Initialize
         if (Init()) {
-            SDL_Log("Initialized Hand Tracker");
+            SDL_Log("[HandTracking] Initialized Hand Tracker");
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load models for NCNN!");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[HandTracking] Failed to load models for NCNN!");
             return;
         }
 
         // Pin to Core 2
-        Core::ThreadUtils::SetThreadName("HandTracker");
         Core::ThreadUtils::PinThreadToCore(2);
 
         // Main loop
@@ -163,7 +162,6 @@ namespace Perception {
                         headRotation = m_state->headRotation;
                     }
 
-                    // No slam for not, so:
                     glm::vec3 slamPos;
                     {
                         std::lock_guard lock(m_state->slamMtx);
@@ -181,7 +179,7 @@ namespace Perception {
 
                 // Write to Shared State
                 {
-                    std::lock_guard<std::mutex> lock(m_state->handMutex);
+                    std::lock_guard lock(m_state->handMutex);
                     m_state->objects = std::move(data);
                     m_state->worldPointer = calculatedWorldPointer;
                     m_state->worldWrist = calculatedWorldWrist;
@@ -193,6 +191,6 @@ namespace Perception {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
 
-        SDL_Log("Hand Tracking Thread Stopped!");
+        SDL_Log("[HandTracking] Hand Tracking Thread Stopped!");
     }
 }

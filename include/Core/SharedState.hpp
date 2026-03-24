@@ -54,8 +54,8 @@ namespace Core {
         std::atomic<uint64_t> inferenceLatency = 0;
 
         // World pointer (Index fingertip, approximated depth)
-        glm::vec3 worldPointer = glm::vec3(0.0f);
-        glm::vec3 worldWrist = glm::vec3(0.0f);
+        glm::vec3 worldPointer{0.0f};
+        glm::vec3 worldWrist{0.0f};
         bool isPointerActive = false;
 
         // --- System State ---

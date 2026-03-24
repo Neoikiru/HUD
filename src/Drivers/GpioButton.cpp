@@ -20,7 +20,7 @@ namespace Drivers {
                 gpiod_line_request_input(m_pImpl->line, "HUD_Button");
             }
         } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "GPIO Chip not found!");
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "[GPIO Button] GPIO Chip not found!");
         }
     }
 

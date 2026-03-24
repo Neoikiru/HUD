@@ -37,8 +37,9 @@ namespace Core {
     }
 
     void Engine::Initialize(const EngineConfig &config) {
+        ThreadUtils::SetThreadName("Engine");
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL Init Failed: %s", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[Engine] SDL Init Failed: %s", SDL_GetError());
             return;
         }
 
@@ -93,11 +94,10 @@ namespace Core {
         m_windows.push_back(std::move(debugHud));
 
 
-        ThreadUtils::SetThreadName("MainRender");
         ThreadUtils::PinThreadToCore(0);
 
         m_isRunning = true;
-        SDL_Log("Engine Initialized. Main Thread on Core 0.");
+        SDL_Log("[Engine] Engine Initialized. Main Thread on Core 0.");
     }
 
     void Engine::Run() {
@@ -150,17 +150,17 @@ namespace Core {
 
             // Print average every 60 frames
             frameCount++;
-            if (frameCount >= 60) {
-                // SDL_Log(
-                //     "[Telemetry] Avg over 60 frames | Input: %.3f ms | Update: %.3f ms | Render: %.3f ms | Total: %.3f ms (%.1f FPS)",
-                //     accumInput / 60.0,
-                //     accumUpdate / 60.0,
-                //     accumRender / 60.0,
-                //     accumTotal / 60.0,
-                //     1000.0 / (accumTotal / 60.0));
+            if (frameCount >= 240) {
+                SDL_Log(
+                    "[Engine] [Telemetry] Avg over 120 frames | Input: %.3f ms | Update: %.3f ms | Render: %.3f ms | Total: %.3f ms (%.1f FPS)",
+                    accumInput / 120.0,
+                    accumUpdate / 120.0,
+                    accumRender / 120.0,
+                    accumTotal / 120.0,
+                    1000.0 / (accumTotal / 120.0));
 
                 // Reset accumulators
-                frameCount = 0;
+                frameCount = 0.0;
                 accumInput = 0.0;
                 accumUpdate = 0.0;
                 accumRender = 0.0;
@@ -180,7 +180,7 @@ namespace Core {
         m_actionButton->Update();
 
         if (m_actionButton->IsDoubleTapped()) {
-            SDL_Log("Action: Double Tap!");
+            SDL_Log("[Engine] Action: Double Tap!");
             m_arCamera.ResetCalibration();
         }
     }
@@ -197,7 +197,7 @@ namespace Core {
 
     void Engine::Render() {
         static uint64_t perfFreq = SDL_GetPerformanceFrequency();
-        static int frameCount = 0;
+        static int frameCount = 0.0;
         static double accumInput = 0.0;
         static double accumRender = 0.0;
         static double accumEndFrame = 0.0;
@@ -242,67 +242,20 @@ namespace Core {
 
         // Print average every 60 frames
         frameCount++;
-        if (frameCount >= 60) {
-            // SDL_Log(
-            //     "[Telemetry] Avg over 60 frames | FrameBegin: %.3f ms | RenderWindows: %.3f ms | endFrame: %.3f ms | Total: %.3f ms (%.1f FPS)",
-            //     accumInput / 60.0,
-            //     accumRender / 60.0,
-            //     accumEndFrame / 60.0,
-            //     accumTotal / 60.0,
-            //     1000.0 / (accumTotal / 60.0));
-            // std::vector<PalmObject> object;
-            // {
-            //     std::lock_guard  lock(m_state->handMutex);
-            //     object = m_state->objects;
-            // }
-
-
-            static auto DebugLogPalmObject = [](const PalmObject &palm, int index = 0) {
-                SDL_Log("========== PALM OBJECT [%d] ==========", index);
-
-                // Basic Floats & OpenCV Rect
-                SDL_Log("Score: %.3f | Rotation: %.3f", palm.score, palm.rotation);
-                SDL_Log("Rect: [x: %d, y: %d, w: %d, h: %d]",
-                        palm.rect.x, palm.rect.y, palm.rect.width, palm.rect.height);
-
-                SDL_Log("Hand Bounding Box: [cx: %.2f, cy: %.2f, w: %.2f, h: %.2f]",
-                        palm.hand_cx, palm.hand_cy, palm.hand_w, palm.hand_h);
-
-                // 7 Palm Landmarks
-                for (int i = 0; i < 7; ++i) {
-                    SDL_Log("  Landmark[%d]: (%.1f, %.1f)", i, palm.landmarks[i].x, palm.landmarks[i].y);
-                }
-
-                // 4 Hand Corners
-                for (int i = 0; i < 4; ++i) {
-                    SDL_Log("  HandPos corner[%d]: (%.1f, %.1f)", i, palm.hand_pos[i].x, palm.hand_pos[i].y);
-                }
-
-                // Image Matrix Metadata (Don't print raw bytes!)
-                SDL_Log("TransImage Metadata: %d x %d pixels | Type: %d | Channels: %d | Empty: %s",
-                        palm.trans_image.cols, palm.trans_image.rows,
-                        palm.trans_image.type(), palm.trans_image.channels(),
-                        palm.trans_image.empty() ? "YES" : "NO");
-
-                // Dynamic Skeleton Array (Usually 21 joints)
-                SDL_Log("Skeleton Joints Count: %zu", palm.skeleton.size());
-                for (size_t i = 0; i < palm.skeleton.size(); ++i) {
-                    SDL_Log("  Joint[%zu]: (%.1f, %.1f)", i, palm.skeleton[i].x, palm.skeleton[i].y);
-                }
-
-                SDL_Log("======================================");
-            };
-
-            // for (size_t i = 0; i < object.size(); i++) {
-            //     DebugLogPalmObject(object[i], i);
-            // }
-
+        if (frameCount >= 120) {
+            SDL_Log(
+                "[Engine] [Telemetry] Avg over 120 frames | FrameBegin: %.3f ms | RenderWindows: %.3f ms | endFrame: %.3f ms | Total: %.3f ms (%.1f FPS)",
+                accumInput / 120.0,
+                accumRender / 120.0,
+                accumEndFrame / 120.0,
+                accumTotal / 120.0,
+                1000.0 / (accumTotal / 120.0));
 
             // Reset accumulators
-            frameCount = 0;
+            frameCount = 0.0;
             accumInput = 0.0;
             accumRender = 0.0;
-            accumEndFrame = 0;
+            accumEndFrame = 0.0;
             accumTotal = 0.0;
         }
     }

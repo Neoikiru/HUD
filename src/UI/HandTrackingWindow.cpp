@@ -40,7 +40,8 @@ void HandTrackingWindow::Init() {
         if (!success) {
             char infoLog[1024];
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shader Compilation Error (%s):\n%s", type.c_str(), infoLog);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[HandTrackingWindow] Shader Compilation Error (%s):\n%s",
+                         type.c_str(), infoLog);
         }
     };
 
@@ -64,7 +65,7 @@ void HandTrackingWindow::Init() {
     if (!success) {
         char infoLog[1024];
         glGetProgramInfoLog(m_shaderProgram, 1024, NULL, infoLog);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shader Program Link Error:\n%s", infoLog);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[HandTrackingWindow] Shader Program Link Error:\n%s", infoLog);
     }
 
     glDeleteShader(vertexShader);
@@ -75,7 +76,9 @@ void HandTrackingWindow::Init() {
     m_pointSizeLoc = glGetUniformLocation(m_shaderProgram, "u_PointSize");
 
     if (m_mvpLoc == -1 || m_colorLoc == -1 || m_pointSizeLoc == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find uniform locations in HandTrackingWindow! MVP:%d Color:%d PointSize:%d", m_mvpLoc, m_colorLoc, m_pointSizeLoc);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[HandTrackingWindow] Failed to find uniform locations in HandTrackingWindow! MVP:%d Color:%d PointSize:%d",
+                     m_mvpLoc, m_colorLoc, m_pointSizeLoc);
     }
 
     glGenVertexArrays(1, &m_VAO);
@@ -86,7 +89,7 @@ void HandTrackingWindow::Init() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *) 0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "HandTrackingWindow Initialized!");
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "[HandTrackingWindow] HandTrackingWindow Initialized!");
 }
 
 

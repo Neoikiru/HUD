@@ -30,7 +30,7 @@ namespace Rendering {
         m_projectionMatrix[2][3] = -1.0f;
         m_projectionMatrix[3][2] = -(2.0f * farClip * nearClip) / (farClip - nearClip);
 
-        SDL_Log("Loaded ArUco-Calibrated Projection Matrix!");
+        SDL_Log("[ArCamera] Loaded ArUco-Calibrated Projection Matrix!");
 
         // Set safe defaults for Frame 0 before the first Update() tick
         glm::mat4 displayFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -43,7 +43,7 @@ namespace Rendering {
 
     void ARCamera::Update() { // <-- THE MOST HATED THING IN THIS PROJECT
         if (!m_state) {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "State Not Initialized in Ar Camera!");
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "[ArCamera] State Not Initialized in Ar Camera!");
             return;
         }
 
@@ -93,7 +93,7 @@ namespace Rendering {
         if (m_calibState == CalibrationState::NeedsCenter) {
             m_tareRotation = ergonomicImu;
             m_calibState = CalibrationState::Calibrated;
-            SDL_Log("HUD ZEROED! Golden State Active.");
+            SDL_Log("[ArCamera] HUD ZEROED! Golden State Active.");
         }
 
         // World rotation relative to center

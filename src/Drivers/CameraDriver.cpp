@@ -20,13 +20,13 @@ namespace Drivers {
 
         auto cameras = m_cameraManager->cameras();
         if (cameras.empty()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No cameras found!");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] No cameras found!");
             return false;
         }
 
         m_camera = cameras[0];
         if (m_camera->acquire()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to acquire camera");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to acquire camera");
             return false;
         }
 
@@ -40,12 +40,12 @@ namespace Drivers {
         streamConfig.bufferCount = 4;
 
         if (m_config->validate() == libcamera::CameraConfiguration::Invalid) {
-             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Camera configuration invalid");
-             return false;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Camera configuration invalid");
+            return false;
         }
 
         if (m_camera->configure(m_config.get())) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to configure camera");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to configure camera");
             return false;
         }
 
@@ -61,12 +61,12 @@ namespace Drivers {
         libcamera::Stream *stream = m_config->at(0).stream();
         
         if (m_allocator->allocate(stream) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to allocate buffers");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to allocate buffers");
             return;
         }
 
         const auto &buffers = m_allocator->buffers(stream);
-        SDL_Log("Allocated %d buffers", (int)buffers.size());
+        SDL_Log("[CameraDriver] Allocated %d buffers", (int) buffers.size());
 
         for (const auto &buffer : buffers) {
             const libcamera::FrameBuffer::Plane &plane = buffer->planes()[0];
@@ -75,13 +75,13 @@ namespace Drivers {
 
             void *data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
             if (data == MAP_FAILED) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mmap failed");
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] mmap failed");
                 return;
             }
 
             m_mappedBuffers[fd] = data;
             m_bufferSizes[fd] = length;
-            SDL_Log("Mapped FD %d, Len %zu", fd, length);
+            SDL_Log("[CameraDriver] Mapped FD %d, Len %zu", fd, length);
         }
 
         // 3. Create Requests
@@ -89,12 +89,12 @@ namespace Drivers {
         for (const auto &buffer : buffers) {
             std::unique_ptr<libcamera::Request> request = m_camera->createRequest();
             if (!request) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't create request");
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Can't create request");
                 continue;
             }
 
             if (request->addBuffer(stream, buffer.get()) < 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't add buffer to request");
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Can't add buffer to request");
                 continue;
             }
 
@@ -104,16 +104,16 @@ namespace Drivers {
         m_camera->requestCompleted.connect(this, &CameraDriver::RequestCompleted);
 
         if (m_camera->start()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to start camera");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to start camera");
             return;
         }
 
-        SDL_Log("Queueing %d requests...", (int)m_requests.size());
+        SDL_Log("[CameraDriver] Queueing %d requests...", (int) m_requests.size());
         for (auto &req : m_requests) {
             m_camera->queueRequest(req.get());
         }
-        
-        SDL_Log("Camera Driver Started");
+
+        SDL_Log("[CameraDriver] Camera Driver Started");
     }
 
     void CameraDriver::Stop() {

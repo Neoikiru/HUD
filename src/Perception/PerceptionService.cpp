@@ -39,18 +39,18 @@ namespace Perception {
         Core::ThreadUtils::SetThreadName("Perception");
         Core::ThreadUtils::PinThreadToCore(1);
 
-        SDL_Log("Perception Thread Started on Core 1");
+        SDL_Log("[PerceptionService] Perception Thread Started on Core 1");
 
         // 2. Initialize Hardware
         if (!m_imu->Init()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "IMU Init Failed in Perception Thread");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[PerceptionService] IMU Init Failed in Perception Thread");
         }
 
         if (m_camera->Init()) {
             m_camera->Start();
-            SDL_Log("Camera Started");
+            SDL_Log("[PerceptionService] Camera Started");
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Camera Init Failed");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[PerceptionService] Camera Init Failed");
         }
 
         // 3. Loop
@@ -76,7 +76,7 @@ namespace Perception {
         }
         
         m_camera->Stop();
-        SDL_Log("Perception Thread Stopped");
+        SDL_Log("[PerceptionService] Perception Thread Stopped");
     }
 
 }

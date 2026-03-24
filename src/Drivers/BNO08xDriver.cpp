@@ -23,7 +23,7 @@ namespace Drivers {
 
     static void asyncCallback(void *cookie, sh2_AsyncEvent_t *pEvent) {
         if (pEvent->eventId == SH2_RESET) {
-            SDL_Log("BNO08x Reset Occurred!");
+            SDL_Log("[BNO08x Driver] BNO08x Reset Occurred!");
         }
     }
 
@@ -44,12 +44,12 @@ namespace Drivers {
 
     bool BNO08xDriver::Init() {
         // 0. Hardware reset
-        SDL_Log("Performing Physical Hardware Reset on GPIO 26...");
+        SDL_Log("[BNO08x Driver] Performing Physical Hardware Reset on GPIO 26...");
 
         // Force the pin to be an Output and drive it LOW to kill the sensor
         int ret = system("pinctrl set 26 op pn dl");
         if (ret != 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "pinctrl command failed.");
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] pinctrl command failed.");
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Clear buffers
 
@@ -58,12 +58,12 @@ namespace Drivers {
 
         // The BNO08x takes ~600ms to boot up
         std::this_thread::sleep_for(std::chrono::milliseconds(600));
-        SDL_Log("BNO08x Hardware Booted.");
+        SDL_Log("[BNO08x Driver] BNO08x Hardware Booted.");
 
         // 1. Open I2C
         m_fileDescriptor = open(m_device.c_str(), O_RDWR);
         if (m_fileDescriptor < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open I2C bus");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] Failed to open I2C bus");
             return false;
         }
 
@@ -74,8 +74,8 @@ namespace Drivers {
             ioctl(m_fileDescriptor, I2C_SLAVE, address);
         }
 
-        SDL_Log("Using BNO08x Address: 0x%02X", address);
-        
+        SDL_Log("[BNO08x Driver] Using BNO08x Address: 0x%02X", address);
+
         // Initialize HAL first so we can use its Read/Write functions
         sh2_hal_set_fd(m_fileDescriptor, address);
         sh2_hal_linux_init(&m_hal);
@@ -111,7 +111,7 @@ namespace Drivers {
         // 3. Open SH2
         int status = sh2_open(&m_hal, asyncCallback, NULL);
         if (status != SH2_OK) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "sh2_open failed: %d", status);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] sh2_open failed: %d", status);
             // Don't return false yet, maybe it works anyway?
             // Actually, if open fails, we probably can't configure.
             return false;
@@ -124,21 +124,21 @@ namespace Drivers {
         sh2_ProductIds_t prodIds;
         status = sh2_getProdIds(&prodIds);
         if (status == SH2_OK && prodIds.numEntries > 0) {
-            SDL_Log("BNO08x Part %d, Ver %d.%d.%d", 
-                prodIds.entry[0].swPartNumber, 
-                prodIds.entry[0].swVersionMajor, prodIds.entry[0].swVersionMinor, prodIds.entry[0].swVersionPatch);
+            SDL_Log("[BNO08x Driver] BNO08x Part %d, Ver %d.%d.%d",
+                    prodIds.entry[0].swPartNumber,
+                    prodIds.entry[0].swVersionMajor, prodIds.entry[0].swVersionMinor, prodIds.entry[0].swVersionPatch);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to read Product IDs: %d", status);
+            SDL_LogError(SDL_LOG_CATEGORY_INPUT, "[BNO08x Driver] Failed to read Product IDs: %d", status);
         }
 
         // 6. Enable Reports
-        SDL_Log("Enabling Game Rotation Vector...");
+        SDL_Log("[BNO08x Driver] Enabling Game Rotation Vector...");
         EnableReport(SH2_GAME_ROTATION_VECTOR, 10000); // 10ms
 
-        SDL_Log("Enabling Linear Acceleration...");
+        SDL_Log("[BNO08x Driver] Enabling Linear Acceleration...");
         EnableReport(SH2_LINEAR_ACCELERATION, 10000);
 
-        SDL_Log("BNO08x Initialized (SH2)");
+        SDL_Log("[BNO08x Driver] BNO08x Initialized (SH2)");
         return true;
     }
 
@@ -155,7 +155,8 @@ namespace Drivers {
 
         int status = sh2_setSensorConfig(reportId, &config);
         if (status != SH2_OK) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Failed to enable report 0x%02X: %d", reportId, status);
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] Failed to enable report 0x%02X: %d", reportId,
+                        status);
         }
     }
 

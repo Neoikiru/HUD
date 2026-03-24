@@ -4,7 +4,7 @@
 
 namespace Rendering {
 
-    DisplayManager::DisplayManager() {}
+    DisplayManager::DisplayManager() = default;
 
     DisplayManager::~DisplayManager() {
         Shutdown();
@@ -32,24 +32,25 @@ namespace Rendering {
         // Create window
         m_window = SDL_CreateWindow(config.title.c_str(), config.width, config.height ,flags);
         if (!m_window) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Window creation failed: %s", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "[Display Manager] Window creation failed: %s", SDL_GetError());
             return false;
         }
 
         // Create OpenGL context
         m_glContext = SDL_GL_CreateContext(m_window);
         if (!m_glContext) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "OpenGL Context creation failed: %s", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "[Display Manager] OpenGL Context creation failed: %s",
+                         SDL_GetError());
             return false;
         }
 
         if (!gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress)) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to initialize GLAD/OpenGL pointers!");
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "[Display Manager] Failed to initialize GLAD/OpenGL pointers!");
             return false;
         }
-        SDL_Log("OpenGL Loaded! Vendor: %s", glGetString(GL_VENDOR));
-        SDL_Log("OpenGL Renderer: %s", glGetString(GL_RENDERER));
-        SDL_Log("OpenGL Version: %s", glGetString(GL_VERSION));
+        SDL_Log("[Display Manager] OpenGL Loaded! Vendor: %s", glGetString(GL_VENDOR));
+        SDL_Log("[Display Manager] OpenGL Renderer: %s", glGetString(GL_RENDERER));
+        SDL_Log("[Display Manager] OpenGL Version: %s", glGetString(GL_VERSION));
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -57,7 +58,7 @@ namespace Rendering {
         // VSync off
         SDL_GL_SetSwapInterval(0);
 
-        SDL_Log("OpenGL Display Initialized: %dx%d", config.width, config.height);
+        SDL_Log("[Display Manager] OpenGL Display Initialized: %dx%d", config.width, config.height);
         return true;
     }
 

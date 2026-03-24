@@ -61,7 +61,7 @@ void DebugHUDWindow::SetupFBO() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_uiTexture, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ERROR::FRAMEBUFFER:: ImGui FBO is not complete!");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DebugHUD] ERROR::FRAMEBUFFER:: ImGui FBO is not complete!");
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
