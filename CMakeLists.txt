@@ -136,6 +136,7 @@ add_executable(hud
 
     src/Rendering/DisplayManager.cpp
     src/Rendering/ARCamera.cpp
+        src/Rendering/SpatialUIManager.cpp
 
     src/Perception/PerceptionService.cpp
 

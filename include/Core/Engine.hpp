@@ -1,12 +1,18 @@
 #pragma once
 #include <memory>
+
 #include "Core/Types.hpp"
 #include "Core/SharedState.hpp"
+
 #include "Drivers/GpioButton.hpp"
-#include "Rendering/DisplayManager.hpp"
+
 #include "Perception/HandTracking/HandTracking.hpp"
 #include "Perception/PerceptionService.hpp"
+
+#include "Rendering/SpatialUIManager.hpp"
+#include "Rendering/DisplayManager.hpp"
 #include "Rendering/ARCamera.hpp"
+
 #include "UI/SpatialWindow.hpp"
 
 namespace Core {
@@ -40,6 +46,8 @@ namespace Core {
 
         Rendering::ARCamera m_arCamera;
         std::vector<std::unique_ptr<SpatialWindow>> m_windows;
+
+        std::unique_ptr<Rendering::SpatialUIManager> m_uiManager;
     };
 
 }

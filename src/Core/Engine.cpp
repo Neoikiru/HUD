@@ -5,6 +5,7 @@
 #include "UI/HandTrackingWindow.hpp"
 #include "UI/DebugHUDWindow.hpp"
 
+
 #include <SDL3/SDL.h>
 #include <sstream>
 #include <iomanip>
@@ -28,10 +29,7 @@ namespace Core {
             window->Destroy();
         }
 
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplSDL3_Shutdown();
-        ImGui::DestroyContext();
-
+        m_uiManager->Shutdown();
         m_display.Shutdown();
         SDL_Quit();
     }
@@ -51,19 +49,9 @@ namespace Core {
             return;
         }
 
-        // ==========================================
-        // IMGUI INITIALIZATION
-        // ==========================================
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        (void) io;
-        io.IniFilename = nullptr; // Prevents ImGui from creating an imgui.ini file
-        ImGui::StyleColorsDark();
-
-        // Pass the raw SDL Window and GL Context from DisplayManager
-        ImGui_ImplSDL3_InitForOpenGL(m_display.GetWindow(), m_display.GetContext());
-        ImGui_ImplOpenGL3_Init("#version 300 es");
+        // IMGUI
+        m_uiManager = std::make_unique<Rendering::SpatialUIManager>();
+        m_uiManager->Init(m_display.GetWindow(), m_display.GetContext());
 
         m_actionButton = std::make_unique<Drivers::GpioButton>(17);
 
@@ -87,11 +75,11 @@ namespace Core {
         handTrackingWindow->setLockMode(LockMode::World);
         m_windows.push_back(std::move(handTrackingWindow));
 
-        auto debugHud = std::make_unique<DebugHUDWindow>(m_state);
-        debugHud->Init();
-        debugHud->setVisible(true);
-        debugHud->setLockMode(LockMode::World);
-        m_windows.push_back(std::move(debugHud));
+        // auto debugHud = std::make_unique<DebugHUDWindow>(m_state);
+        // debugHud->Init();
+        // debugHud->setVisible(true);
+        // debugHud->setLockMode(LockMode::World);
+        // m_windows.push_back(std::move(debugHud));
 
 
         ThreadUtils::PinThreadToCore(0);
@@ -123,10 +111,7 @@ namespace Core {
             uint64_t t0 = SDL_GetPerformanceCounter();
             HandleInput();
 
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplSDL3_NewFrame();
-            ImGui::NewFrame();
-
+            m_uiManager->BeginFrame();
             // 2. Measure Update
             uint64_t t1 = SDL_GetPerformanceCounter();
             Update(dt);
@@ -151,13 +136,13 @@ namespace Core {
             // Print average every 60 frames
             frameCount++;
             if (frameCount >= 240) {
-                SDL_Log(
-                    "[Engine] [Telemetry] Avg over 120 frames | Input: %.3f ms | Update: %.3f ms | Render: %.3f ms | Total: %.3f ms (%.1f FPS)",
-                    accumInput / 120.0,
-                    accumUpdate / 120.0,
-                    accumRender / 120.0,
-                    accumTotal / 120.0,
-                    1000.0 / (accumTotal / 120.0));
+                // SDL_Log(
+                //     "[Engine] [Telemetry] Avg over 120 frames | Input: %.3f ms | Update: %.3f ms | Render: %.3f ms | Total: %.3f ms (%.1f FPS)",
+                //     accumInput / 120.0,
+                //     accumUpdate / 120.0,
+                //     accumRender / 120.0,
+                //     accumTotal / 120.0,
+                //     1000.0 / (accumTotal / 120.0));
 
                 // Reset accumulators
                 frameCount = 0.0;
@@ -190,12 +175,17 @@ namespace Core {
 
         m_arCamera.Update();
 
+        ImGui::Begin("Atlas Test Window");
+        ImGui::Text("If this doesn't crash, Phase 1 is complete!");
+        ImGui::End();
+
         for (auto &window: m_windows) {
             window->Update(static_cast<float>(dt));
         }
     }
 
     void Engine::Render() {
+        m_uiManager->EndFrame();
         static uint64_t perfFreq = SDL_GetPerformanceFrequency();
         static int frameCount = 0.0;
         static double accumInput = 0.0;
@@ -243,13 +233,13 @@ namespace Core {
         // Print average every 60 frames
         frameCount++;
         if (frameCount >= 120) {
-            SDL_Log(
-                "[Engine] [Telemetry] Avg over 120 frames | FrameBegin: %.3f ms | RenderWindows: %.3f ms | endFrame: %.3f ms | Total: %.3f ms (%.1f FPS)",
-                accumInput / 120.0,
-                accumRender / 120.0,
-                accumEndFrame / 120.0,
-                accumTotal / 120.0,
-                1000.0 / (accumTotal / 120.0));
+            // SDL_Log(
+            //     "[Engine] [Telemetry] Avg over 120 frames | FrameBegin: %.3f ms | RenderWindows: %.3f ms | endFrame: %.3f ms | Total: %.3f ms (%.1f FPS)",
+            //     accumInput / 120.0,
+            //     accumRender / 120.0,
+            //     accumEndFrame / 120.0,
+            //     accumTotal / 120.0,
+            //     1000.0 / (accumTotal / 120.0));
 
             // Reset accumulators
             frameCount = 0.0;
