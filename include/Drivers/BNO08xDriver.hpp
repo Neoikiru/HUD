@@ -35,7 +35,7 @@ namespace Drivers {
         
         sh2_Hal_t m_hal; // SH2 HAL Interface
 
-        void EnableReport(int reportId, uint32_t intervalUs);
+        int EnableReport(int reportId, uint32_t intervalUs);
     };
 
 }

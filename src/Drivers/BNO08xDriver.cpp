@@ -135,6 +135,25 @@ namespace Drivers {
         SDL_Log("[BNO08x Driver] Enabling Game Rotation Vector...");
         EnableReport(SH2_GAME_ROTATION_VECTOR, 10000); // 10ms
 
+        bool engineStarted = false;
+        for (int attempt = 1; attempt <= 5; ++attempt) {
+            SDL_Log("[BNO08x Driver] Attempting to enable Game Rotation Vector (Try %d/5)...", attempt);
+
+            if (EnableReport(SH2_GAME_ROTATION_VECTOR, 10000) == SH2_OK) {
+                engineStarted = true;
+                SDL_Log("[BNO08x Driver] Success! Math engine running.");
+                break;
+            }
+
+            SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, "[BNO08x Driver] Failed. Smacking the I2C bus and retrying...");
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+
+        if (!engineStarted) {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "[BNO08x Driver] FATAL: BNO08x refused to initialize.");
+            // Fatal Error
+        }
+
         SDL_Log("[BNO08x Driver] Enabling Linear Acceleration...");
         EnableReport(SH2_LINEAR_ACCELERATION, 10000);
 
@@ -142,7 +161,7 @@ namespace Drivers {
         return true;
     }
 
-    void BNO08xDriver::EnableReport(int reportId, uint32_t intervalUs) {
+    int BNO08xDriver::EnableReport(int reportId, uint32_t intervalUs) {
         sh2_SensorConfig_t config;
         config.changeSensitivityEnabled = false;
         config.wakeupEnabled = false;
@@ -155,9 +174,10 @@ namespace Drivers {
 
         int status = sh2_setSensorConfig(reportId, &config);
         if (status != SH2_OK) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] Failed to enable report 0x%02X: %d", reportId,
+            SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, "[BNO08x Driver] Failed to enable report 0x%02X: %d", reportId,
                         status);
         }
+        return status;
     }
 
     IMUData BNO08xDriver::Read() {
