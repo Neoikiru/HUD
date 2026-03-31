@@ -1,6 +1,7 @@
 #pragma once
-#include "sh2_hal.h"
 #include <cstdint>
+
+#include "sh2_hal.h"
 
 // Helper to initialize the HAL struct with Linux I2C implementation
 void sh2_hal_linux_init(sh2_Hal_t* pHal);

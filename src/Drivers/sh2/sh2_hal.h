@@ -2,7 +2,7 @@
  * Copyright 2018 Hillcrest Laboratories, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License and 
+ * you may not use this file except in compliance with the License and
  * any applicable agreements you may have with Hillcrest Laboratories, Inc.
  * You may obtain a copy of the License at
  *
@@ -27,13 +27,13 @@
 
 // SH2 Implementations generally have a max out transfer len of 256
 #define SH2_HAL_MAX_TRANSFER_OUT (256)
-#define SH2_HAL_MAX_PAYLOAD_OUT  (256)
+#define SH2_HAL_MAX_PAYLOAD_OUT (256)
 
 // Although some implementations adversize a max in transfer of 32K,
 // in practice, the largest transfer performed is the advertisements
 // which is 272 bytes at time of writing.
-#define SH2_HAL_MAX_TRANSFER_IN  (384)
-#define SH2_HAL_MAX_PAYLOAD_IN   (384)
+#define SH2_HAL_MAX_TRANSFER_IN (384)
+#define SH2_HAL_MAX_PAYLOAD_IN (384)
 
 // This needs to be a power of 2, greater than max of the above.
 #define SH2_HAL_DMA_SIZE (512)
@@ -98,7 +98,7 @@ struct sh2_Hal_s {
 
     // This function should return a 32-bit value representing a
     // microsecond counter.  The count may roll over after 2^32
-    // microseconds.  
+    // microseconds.
     uint32_t (*getTimeUs)(sh2_Hal_t *self);
 };
 

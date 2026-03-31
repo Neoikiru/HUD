@@ -1,173 +1,172 @@
 #include "Drivers/CameraDriver.hpp"
-#include <sys/mman.h>
-#include <libcamera/orientation.h>
-#include <unistd.h>
+
 #include <SDL3/SDL_log.h>
+#include <libcamera/orientation.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include <cstring>
 
 namespace Drivers {
 
-    CameraDriver::CameraDriver(std::shared_ptr<Core::SharedState> state)
-        : m_state(state) {}
+CameraDriver::CameraDriver(std::shared_ptr<Core::SharedState> state) : m_state(state) {}
 
-    CameraDriver::~CameraDriver() {
-        Stop();
+CameraDriver::~CameraDriver() { Stop(); }
+
+bool CameraDriver::Init() {
+    m_cameraManager = std::make_unique<libcamera::CameraManager>();
+    m_cameraManager->start();
+
+    auto cameras = m_cameraManager->cameras();
+    if (cameras.empty()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] No cameras found!");
+        return false;
     }
 
-    bool CameraDriver::Init() {
-        m_cameraManager = std::make_unique<libcamera::CameraManager>();
-        m_cameraManager->start();
-
-        auto cameras = m_cameraManager->cameras();
-        if (cameras.empty()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] No cameras found!");
-            return false;
-        }
-
-        m_camera = cameras[0];
-        if (m_camera->acquire()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to acquire camera");
-            return false;
-        }
-
-        m_config = m_camera->generateConfiguration( { libcamera::StreamRole::Viewfinder } );
-
-        m_config->orientation = libcamera::Orientation::Rotate180;
-        
-        libcamera::StreamConfiguration &streamConfig = m_config->at(0);
-        streamConfig.pixelFormat = libcamera::formats::RGB888; 
-        streamConfig.size = {640, 480}; 
-        streamConfig.bufferCount = 4;
-
-        if (m_config->validate() == libcamera::CameraConfiguration::Invalid) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Camera configuration invalid");
-            return false;
-        }
-
-        if (m_camera->configure(m_config.get())) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to configure camera");
-            return false;
-        }
-
-        m_lensDistortion.Init(640, 480);
-
-        return true;
+    m_camera = cameras[0];
+    if (m_camera->acquire()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to acquire camera");
+        return false;
     }
 
-    void CameraDriver::Start() {
-        if (!m_camera) return;
+    m_config = m_camera->generateConfiguration({libcamera::StreamRole::Viewfinder});
 
-        m_allocator = std::make_unique<libcamera::FrameBufferAllocator>(m_camera);
-        libcamera::Stream *stream = m_config->at(0).stream();
-        
-        if (m_allocator->allocate(stream) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to allocate buffers");
-            return;
-        }
+    m_config->orientation = libcamera::Orientation::Rotate180;
 
-        const auto &buffers = m_allocator->buffers(stream);
-        SDL_Log("[CameraDriver] Allocated %d buffers", (int) buffers.size());
+    libcamera::StreamConfiguration &streamConfig = m_config->at(0);
+    streamConfig.pixelFormat = libcamera::formats::RGB888;
+    streamConfig.size = {640, 480};
+    streamConfig.bufferCount = 4;
 
-        for (const auto &buffer : buffers) {
-            const libcamera::FrameBuffer::Plane &plane = buffer->planes()[0];
-            int fd = plane.fd.get();
-            size_t length = plane.length;
-
-            void *data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
-            if (data == MAP_FAILED) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] mmap failed");
-                return;
-            }
-
-            m_mappedBuffers[fd] = data;
-            m_bufferSizes[fd] = length;
-            SDL_Log("[CameraDriver] Mapped FD %d, Len %zu", fd, length);
-        }
-
-        // Create requests
-
-        for (const auto &buffer : buffers) {
-            std::unique_ptr<libcamera::Request> request = m_camera->createRequest();
-            if (!request) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Can't create request");
-                continue;
-            }
-
-            if (request->addBuffer(stream, buffer.get()) < 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Can't add buffer to request");
-                continue;
-            }
-
-            m_requests.push_back(std::move(request));
-        }
-
-        m_camera->requestCompleted.connect(this, &CameraDriver::RequestCompleted);
-
-        if (m_camera->start()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to start camera");
-            return;
-        }
-
-        SDL_Log("[CameraDriver] Queueing %d requests...", (int) m_requests.size());
-        for (auto &req : m_requests) {
-            m_camera->queueRequest(req.get());
-        }
-
-        SDL_Log("[CameraDriver] Camera Driver Started");
+    if (m_config->validate() == libcamera::CameraConfiguration::Invalid) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Camera configuration invalid");
+        return false;
     }
 
-    void CameraDriver::Stop() {
-        if (!m_camera) return;
-
-        m_camera->requestCompleted.disconnect(this, &CameraDriver::RequestCompleted);
-
-        m_camera->stop();
-        m_requests.clear();
-
-        for (auto const& [fd, addr] : m_mappedBuffers) {
-            size_t len = m_bufferSizes[fd];
-            munmap(addr, len);
-        }
-        m_mappedBuffers.clear();
-        m_bufferSizes.clear();
-
-        m_allocator.reset();
-
-        m_camera->release();
-        m_camera.reset();
+    if (m_camera->configure(m_config.get())) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to configure camera");
+        return false;
     }
 
-    void CameraDriver::RequestCompleted(libcamera::Request *request) {
-        if (request->status() == libcamera::Request::RequestCancelled) return;
+    m_lensDistortion.Init(640, 480);
 
-        const libcamera::FrameBuffer *buffer = request->buffers().begin()->second;
-        const libcamera::FrameMetadata &metadata = buffer->metadata();
-        
-        int fd = buffer->planes()[0].fd.get();
-        void *data = m_mappedBuffers[fd];
-        size_t len = m_bufferSizes[fd];
-
-        auto frame = std::make_shared<Core::CameraFrame>();
-        frame->width = 640; 
-        frame->height = 480;
-        frame->stride = 640 * 3; 
-        frame->timestamp_us = metadata.timestamp / 1000; 
-
-        frame->data = std::make_shared<std::vector<uint8_t>>(len);
-        std::memcpy(frame->data->data(), data, len);
-
-        m_lensDistortion.UndistortFrame(frame);
-
-        if (m_state) {
-            std::lock_guard<std::mutex> lock(m_state->cameraMutex);
-            if (m_state->cameraQueue.size() >= 3) {
-                m_state->cameraQueue.pop_front();
-            }
-            m_state->cameraQueue.push_back(frame);
-        }
-
-        request->reuse(libcamera::Request::ReuseBuffers);
-        m_camera->queueRequest(request);
-    }
-
+    return true;
 }
+
+void CameraDriver::Start() {
+    if (!m_camera) return;
+
+    m_allocator = std::make_unique<libcamera::FrameBufferAllocator>(m_camera);
+    libcamera::Stream *stream = m_config->at(0).stream();
+
+    if (m_allocator->allocate(stream) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to allocate buffers");
+        return;
+    }
+
+    const auto &buffers = m_allocator->buffers(stream);
+    SDL_Log("[CameraDriver] Allocated %d buffers", (int)buffers.size());
+
+    for (const auto &buffer : buffers) {
+        const libcamera::FrameBuffer::Plane &plane = buffer->planes()[0];
+        int fd = plane.fd.get();
+        size_t length = plane.length;
+
+        void *data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
+        if (data == MAP_FAILED) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] mmap failed");
+            return;
+        }
+
+        m_mappedBuffers[fd] = data;
+        m_bufferSizes[fd] = length;
+        SDL_Log("[CameraDriver] Mapped FD %d, Len %zu", fd, length);
+    }
+
+    // Create requests
+
+    for (const auto &buffer : buffers) {
+        std::unique_ptr<libcamera::Request> request = m_camera->createRequest();
+        if (!request) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Can't create request");
+            continue;
+        }
+
+        if (request->addBuffer(stream, buffer.get()) < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Can't add buffer to request");
+            continue;
+        }
+
+        m_requests.push_back(std::move(request));
+    }
+
+    m_camera->requestCompleted.connect(this, &CameraDriver::RequestCompleted);
+
+    if (m_camera->start()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CameraDriver] Failed to start camera");
+        return;
+    }
+
+    SDL_Log("[CameraDriver] Queueing %d requests...", (int)m_requests.size());
+    for (auto &req : m_requests) {
+        m_camera->queueRequest(req.get());
+    }
+
+    SDL_Log("[CameraDriver] Camera Driver Started");
+}
+
+void CameraDriver::Stop() {
+    if (!m_camera) return;
+
+    m_camera->requestCompleted.disconnect(this, &CameraDriver::RequestCompleted);
+
+    m_camera->stop();
+    m_requests.clear();
+
+    for (auto const &[fd, addr] : m_mappedBuffers) {
+        size_t len = m_bufferSizes[fd];
+        munmap(addr, len);
+    }
+    m_mappedBuffers.clear();
+    m_bufferSizes.clear();
+
+    m_allocator.reset();
+
+    m_camera->release();
+    m_camera.reset();
+}
+
+void CameraDriver::RequestCompleted(libcamera::Request *request) {
+    if (request->status() == libcamera::Request::RequestCancelled) return;
+
+    const libcamera::FrameBuffer *buffer = request->buffers().begin()->second;
+    const libcamera::FrameMetadata &metadata = buffer->metadata();
+
+    int fd = buffer->planes()[0].fd.get();
+    void *data = m_mappedBuffers[fd];
+    size_t len = m_bufferSizes[fd];
+
+    auto frame = std::make_shared<Core::CameraFrame>();
+    frame->width = 640;
+    frame->height = 480;
+    frame->stride = 640 * 3;
+    frame->timestamp_us = metadata.timestamp / 1000;
+
+    frame->data = std::make_shared<std::vector<uint8_t>>(len);
+    std::memcpy(frame->data->data(), data, len);
+
+    m_lensDistortion.UndistortFrame(frame);
+
+    if (m_state) {
+        std::lock_guard<std::mutex> lock(m_state->cameraMutex);
+        if (m_state->cameraQueue.size() >= 3) {
+            m_state->cameraQueue.pop_front();
+        }
+        m_state->cameraQueue.push_back(frame);
+    }
+
+    request->reuse(libcamera::Request::ReuseBuffers);
+    m_camera->queueRequest(request);
+}
+
+}  // namespace Drivers

@@ -1,8 +1,10 @@
-#include <glad/glad.h>
 #include "UI/DemoCubeWindow.hpp"
-#include <iostream>
-#include <cmath>
+
 #include <SDL3/SDL_log.h>
+#include <glad/glad.h>
+
+#include <cmath>
+#include <iostream>
 
 void UI::DemoCubeWindow::Init() {
     transform.position = glm::vec3(0.0f, 0.0f, -1.5f);
@@ -11,13 +13,9 @@ void UI::DemoCubeWindow::Init() {
     CompileShaders();
 
     // Setup 3D cube
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f,
-        -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f
-    };
-    unsigned int indices[] = {
-        0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
-    };
+    float vertices[] = {-0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f,
+                        -0.5f, -0.5f, 0.5f,  0.5f, -0.5f, 0.5f,  0.5f, 0.5f, 0.5f,  -0.5f, 0.5f, 0.5f};
+    unsigned int indices[] = {0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7};
 
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
@@ -28,17 +26,12 @@ void UI::DemoCubeWindow::Init() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 
     // Setup 2D navigation arrow
     // Arrow pointing right
-    float arrowVerts[] = {
-        0.15f, 0.0f, 0.0f,
-        -0.10f, 0.10f, 0.0f,
-        -0.05f, 0.0f, 0.0f,
-        -0.10f, -0.10f, 0.0f
-    };
+    float arrowVerts[] = {0.15f, 0.0f, 0.0f, -0.10f, 0.10f, 0.0f, -0.05f, 0.0f, 0.0f, -0.10f, -0.10f, 0.0f};
 
     glGenVertexArrays(1, &m_arrowVAO);
     glGenBuffers(1, &m_arrowVBO);
@@ -46,46 +39,31 @@ void UI::DemoCubeWindow::Init() {
     glBindVertexArray(m_arrowVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_arrowVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(arrowVerts), arrowVerts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 
-
     float headsetVerts[] = {
-        -0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.1f,
-        0.2f, -0.1f, 0.1f, 0.2f, 0.1f, 0.1f,
-        0.2f, 0.1f, 0.1f, -0.2f, 0.1f, 0.1f,
-        -0.2f, 0.1f, 0.1f, -0.2f, -0.1f, 0.1f,
-        -0.2f, -0.1f, 0.3f, 0.2f, -0.1f, 0.3f,
-        0.2f, -0.1f, 0.3f, 0.2f, 0.1f, 0.3f,
-        0.2f, 0.1f, 0.3f, -0.2f, 0.1f, 0.3f,
-        -0.2f, 0.1f, 0.3f, -0.2f, -0.1f, 0.3f,
-        -0.2f, -0.1f, 0.1f, -0.2f, -0.1f, 0.3f,
-        0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.3f,
-        0.2f, 0.1f, 0.1f, 0.2f, 0.1f, 0.3f,
-        -0.2f, 0.1f, 0.1f, -0.2f, 0.1f, 0.3f,
+        -0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, -0.2f, 0.1f, 0.1f,
+        -0.2f, 0.1f, 0.1f, -0.2f, -0.1f, 0.1f, -0.2f, -0.1f, 0.3f, 0.2f, -0.1f, 0.3f, 0.2f, -0.1f, 0.3f, 0.2f, 0.1f,
+        0.3f, 0.2f, 0.1f, 0.3f, -0.2f, 0.1f, 0.3f, -0.2f, 0.1f, 0.3f, -0.2f, -0.1f, 0.3f, -0.2f, -0.1f, 0.1f, -0.2f,
+        -0.1f, 0.3f, 0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.3f, 0.2f, 0.1f, 0.1f, 0.2f, 0.1f, 0.3f, -0.2f, 0.1f, 0.1f, -0.2f,
+        0.1f, 0.3f,
 
         // Camera lens
-        -0.05f, -0.05f, 0.1f, -0.05f, -0.05f, -0.1f,
-        0.05f, -0.05f, 0.1f, 0.05f, -0.05f, -0.1f,
-        0.05f, 0.05f, 0.1f, 0.05f, 0.05f, -0.1f,
-        -0.05f, 0.05f, 0.1f, -0.05f, 0.05f, -0.1f,
-        -0.05f, -0.05f, -0.1f, 0.05f, -0.05f, -0.1f,
-        0.05f, -0.05f, -0.1f, 0.05f, 0.05f, -0.1f,
-        0.05f, 0.05f, -0.1f, -0.05f, 0.05f, -0.1f,
-        -0.05f, 0.05f, -0.1f, -0.05f, -0.05f, -0.1f,
+        -0.05f, -0.05f, 0.1f, -0.05f, -0.05f, -0.1f, 0.05f, -0.05f, 0.1f, 0.05f, -0.05f, -0.1f, 0.05f, 0.05f, 0.1f,
+        0.05f, 0.05f, -0.1f, -0.05f, 0.05f, 0.1f, -0.05f, 0.05f, -0.1f, -0.05f, -0.05f, -0.1f, 0.05f, -0.05f, -0.1f,
+        0.05f, -0.05f, -0.1f, 0.05f, 0.05f, -0.1f, 0.05f, 0.05f, -0.1f, -0.05f, 0.05f, -0.1f, -0.05f, 0.05f, -0.1f,
+        -0.05f, -0.05f, -0.1f,
 
         // Axes
-        0.0f, 0.0f, 0.0f, 0.4f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 0.4f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f
-    };
+        0.0f, 0.0f, 0.0f, 0.4f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f};
 
     glGenVertexArrays(1, &m_axisVAO);
     glGenBuffers(1, &m_axisVBO);
     glBindVertexArray(m_axisVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_axisVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(headsetVerts), headsetVerts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -1,14 +1,17 @@
 #include "sh2_hal_linux.h"
-#include "sh2_err.h" 
-#include <unistd.h>
+
 #include <fcntl.h>
-#include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
 #include <cerrno>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include "sh2_err.h"
 
 // Global file descriptor
 static int g_i2c_fd = -1;
@@ -19,33 +22,30 @@ void sh2_hal_set_fd(int fd, uint8_t addr) {
     g_addr = addr;
 }
 
-static int linux_hal_open(sh2_Hal_t *self) {
-    return 0; 
-}
+static int linux_hal_open(sh2_Hal_t *self) { return 0; }
 
-static void linux_hal_close(sh2_Hal_t *self) {
-}
+static void linux_hal_close(sh2_Hal_t *self) {}
 
 static int linux_hal_read(sh2_Hal_t *self, uint8_t *pBuffer, unsigned len, uint32_t *t_us) {
     if (g_i2c_fd < 0) return 0;
 
     uint8_t localBuf[512];
     unsigned toRead = (len > 512) ? 512 : len;
-    
+
     if (ioctl(g_i2c_fd, I2C_SLAVE, g_addr) < 0) {
         return 0;
     }
 
     // Single-shot read for robustness
     ssize_t bytes = read(g_i2c_fd, localBuf, toRead);
-    
+
     if (bytes < 4) {
         return 0;
     }
 
     // Parse header
     uint16_t packetLen = (localBuf[1] << 8) | localBuf[0];
-    packetLen &= ~0x8000; 
+    packetLen &= ~0x8000;
 
     if (packetLen == 0 || packetLen > bytes) return 0;
 
@@ -56,7 +56,7 @@ static int linux_hal_read(sh2_Hal_t *self, uint8_t *pBuffer, unsigned len, uint3
         auto now = std::chrono::steady_clock::now();
         *t_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     }
-    
+
     return packetLen;
 }
 
@@ -66,7 +66,7 @@ static int linux_hal_write(sh2_Hal_t *self, uint8_t *pBuffer, unsigned len) {
     if (ioctl(g_i2c_fd, I2C_SLAVE, g_addr) < 0) {
         return 0;
     }
-    
+
     if (write(g_i2c_fd, pBuffer, len) != len) {
         return 0;
     }
@@ -78,7 +78,7 @@ static uint32_t linux_hal_getTimeUs(sh2_Hal_t *self) {
     return (uint32_t)std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
 }
 
-void sh2_hal_linux_init(sh2_Hal_t* pHal) {
+void sh2_hal_linux_init(sh2_Hal_t *pHal) {
     pHal->open = linux_hal_open;
     pHal->close = linux_hal_close;
     pHal->read = linux_hal_read;

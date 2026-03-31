@@ -15,17 +15,17 @@
 #ifndef LANDMARK_H
 #define LANDMARK_H
 
-#include <opencv2/core/core.hpp>
 #include <net.h>
 
-class LandmarkDetect
-{
-public:
-    int load(bool use_gpu = false, int num_threads = 1);
-    float detect(const cv::Mat& rgb, const cv::Mat& trans_mat, std::vector<cv::Point2f> &landmarks);
+#include <opencv2/core/core.hpp>
 
-private:
+class LandmarkDetect {
+   public:
+    int load(bool use_gpu = false, int num_threads = 1);
+    float detect(const cv::Mat& rgb, const cv::Mat& trans_mat, std::vector<cv::Point2f>& landmarks);
+
+   private:
     ncnn::Net landmark;
 };
 
-#endif // LANDMARK_H
+#endif  // LANDMARK_H

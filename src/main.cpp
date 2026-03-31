@@ -1,11 +1,11 @@
-#include "Core/Engine.hpp"
 #include <iostream>
 
+#include "Core/Engine.hpp"
 #include "Utils/Logger.hpp"
 
 int main(int argc, char *argv[]) {
-    (void) argc;
-    (void) argv;
+    (void)argc;
+    (void)argv;
     try {
         Core::Logger::Init();
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         // Set explicit resolution
         config.window_width = 240;
         config.window_height = 240;
-        config.fullscreen = true; // Enable fullscreen
+        config.fullscreen = true;  // Enable fullscreen
 
         app.Initialize(config);
         app.Run();

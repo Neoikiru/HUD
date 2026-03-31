@@ -2,7 +2,7 @@
  * Copyright 2015-16 Hillcrest Laboratories, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License and 
+ * you may not use this file except in compliance with the License and
  * any applicable agreements you may have with Hillcrest Laboratories, Inc.
  * You may obtain a copy of the License at
  *
@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-/** 
- * @file sh2_SensorValue.h 
+/**
+ * @file sh2_SensorValue.h
  * @author David Wheeler
  * @date 10 Nov 2015
  * @brief Support for converting sensor events (messages) into natural data structures.
@@ -45,7 +45,7 @@ extern "C" {
  * So W represents the Real components and X, Y and Z the Imaginary ones.
  *
  * In the Hillcrest datasheets and in this code, however, the four components
- * are named real, i, j and k, to make it explicit which is which.  If you 
+ * are named real, i, j and k, to make it explicit which is which.  If you
  * need to translate these names into the "wxyz" or "xyzw" convention, then, the
  * appropriate mapping is this:
  *     w = real
@@ -53,7 +53,7 @@ extern "C" {
  *     y = j
  *     z = k
  */
-	
+
 /**
  * @brief Raw Accelerometer
  *
@@ -61,12 +61,12 @@ extern "C" {
  */
 typedef struct sh2_RawAccelerometer {
     /* Units are ADC counts */
-    int16_t x;  /**< @brief [ADC counts] */
-    int16_t y;  /**< @brief [ADC counts] */
-    int16_t z;  /**< @brief [ADC counts] */
+    int16_t x; /**< @brief [ADC counts] */
+    int16_t y; /**< @brief [ADC counts] */
+    int16_t z; /**< @brief [ADC counts] */
 
     /* Microseconds */
-    uint32_t timestamp;  /**< @brief [uS] */
+    uint32_t timestamp; /**< @brief [uS] */
 } sh2_RawAccelerometer_t;
 
 /**
@@ -87,13 +87,13 @@ typedef struct sh2_Accelerometer {
  */
 typedef struct sh2_RawGyroscope {
     /* Units are ADC counts */
-    int16_t x;  /**< @brief [ADC Counts] */
-    int16_t y;  /**< @brief [ADC Counts] */
-    int16_t z;  /**< @brief [ADC Counts] */
-    int16_t temperature;  /**< @brief [ADC Counts] */
+    int16_t x;           /**< @brief [ADC Counts] */
+    int16_t y;           /**< @brief [ADC Counts] */
+    int16_t z;           /**< @brief [ADC Counts] */
+    int16_t temperature; /**< @brief [ADC Counts] */
 
     /* Microseconds */
-    uint32_t timestamp;  /**< @brief [uS] */
+    uint32_t timestamp; /**< @brief [uS] */
 } sh2_RawGyroscope_t;
 
 /**
@@ -115,12 +115,12 @@ typedef struct sh2_Gyroscope {
  */
 typedef struct sh2_GyroscopeUncalibrated {
     /* Units are rad/s */
-    float x;  /**< @brief [rad/s] */
-    float y;  /**< @brief [rad/s] */
-    float z;  /**< @brief [rad/s] */
-    float biasX;  /**< @brief [rad/s] */
-    float biasY;  /**< @brief [rad/s] */
-    float biasZ;  /**< @brief [rad/s] */
+    float x;     /**< @brief [rad/s] */
+    float y;     /**< @brief [rad/s] */
+    float z;     /**< @brief [rad/s] */
+    float biasX; /**< @brief [rad/s] */
+    float biasY; /**< @brief [rad/s] */
+    float biasZ; /**< @brief [rad/s] */
 } sh2_GyroscopeUncalibrated_t;
 
 /**
@@ -130,12 +130,12 @@ typedef struct sh2_GyroscopeUncalibrated {
  */
 typedef struct sh2_RawMagnetometer {
     /* Units are ADC counts */
-    int16_t x;  /**< @brief [ADC Counts] */
-    int16_t y;  /**< @brief [ADC Counts] */
-    int16_t z;  /**< @brief [ADC Counts] */
+    int16_t x; /**< @brief [ADC Counts] */
+    int16_t y; /**< @brief [ADC Counts] */
+    int16_t z; /**< @brief [ADC Counts] */
 
     /* Microseconds */
-    uint32_t timestamp;  /**< @brief [uS] */
+    uint32_t timestamp; /**< @brief [uS] */
 } sh2_RawMagnetometer_t;
 
 /**
@@ -145,9 +145,9 @@ typedef struct sh2_RawMagnetometer {
  */
 typedef struct sh2_MagneticField {
     /* Units are uTesla */
-    float x;  /**< @brief [uTesla] */
-    float y;  /**< @brief [uTesla] */
-    float z;  /**< @brief [uTesla] */
+    float x; /**< @brief [uTesla] */
+    float y; /**< @brief [uTesla] */
+    float z; /**< @brief [uTesla] */
 } sh2_MagneticField_t;
 
 /**
@@ -157,12 +157,12 @@ typedef struct sh2_MagneticField {
  */
 typedef struct sh2_MagneticFieldUncalibrated {
     /* Units are uTesla */
-    float x;  /**< @brief [uTesla] */
-    float y;  /**< @brief [uTesla] */
-    float z;  /**< @brief [uTesla] */
-    float biasX;  /**< @brief [uTesla] */
-    float biasY;  /**< @brief [uTesla] */
-    float biasZ;  /**< @brief [uTesla] */
+    float x;     /**< @brief [uTesla] */
+    float y;     /**< @brief [uTesla] */
+    float z;     /**< @brief [uTesla] */
+    float biasX; /**< @brief [uTesla] */
+    float biasY; /**< @brief [uTesla] */
+    float biasZ; /**< @brief [uTesla] */
 } sh2_MagneticFieldUncalibrated_t;
 
 /**
@@ -171,11 +171,11 @@ typedef struct sh2_MagneticFieldUncalibrated {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_RotationVectorWAcc {
-    float i;  /**< @brief Quaternion component i */
-    float j;  /**< @brief Quaternion component j */
-    float k;  /**< @brief Quaternion component k */
-    float real;  /**< @brief Quaternion component, real */
-    float accuracy;  /**< @brief Accuracy estimate [radians] */
+    float i;        /**< @brief Quaternion component i */
+    float j;        /**< @brief Quaternion component j */
+    float k;        /**< @brief Quaternion component k */
+    float real;     /**< @brief Quaternion component, real */
+    float accuracy; /**< @brief Accuracy estimate [radians] */
 } sh2_RotationVectorWAcc_t;
 
 /**
@@ -184,10 +184,10 @@ typedef struct sh2_RotationVectorWAcc {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_RotationVector {
-    float i;  /**< @brief Quaternion component i */
-    float j;  /**< @brief Quaternion component j */
-    float k;  /**< @brief Quaternion component k */
-    float real;  /**< @brief Quaternion component real */
+    float i;    /**< @brief Quaternion component i */
+    float j;    /**< @brief Quaternion component j */
+    float k;    /**< @brief Quaternion component k */
+    float real; /**< @brief Quaternion component real */
 } sh2_RotationVector_t;
 
 /**
@@ -196,7 +196,7 @@ typedef struct sh2_RotationVector {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_Pressure {
-    float value;  /**< @brief Atmospheric Pressure.  [hectopascals] */
+    float value; /**< @brief Atmospheric Pressure.  [hectopascals] */
 } sh2_Pressure_t;
 
 /**
@@ -205,7 +205,7 @@ typedef struct sh2_Pressure {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_AmbientLight {
-    float value;  /**< @brief Ambient Light.  [lux] */
+    float value; /**< @brief Ambient Light.  [lux] */
 } sh2_AmbientLight_t;
 
 /**
@@ -214,7 +214,7 @@ typedef struct sh2_AmbientLight {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_Humidity {
-    float value;  /**< @brief Relative Humidity.  [percent] */
+    float value; /**< @brief Relative Humidity.  [percent] */
 } sh2_Humidity_t;
 
 /**
@@ -223,7 +223,7 @@ typedef struct sh2_Humidity {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_Proximity {
-    float value;  /**< @brief Proximity.  [cm] */
+    float value; /**< @brief Proximity.  [cm] */
 } sh2_Proximity_t;
 
 /**
@@ -232,7 +232,7 @@ typedef struct sh2_Proximity {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_Temperature {
-    float value;  /**< @brief Temperature.  [C] */
+    float value; /**< @brief Temperature.  [C] */
 } sh2_Temperature_t;
 
 /**
@@ -241,7 +241,7 @@ typedef struct sh2_Temperature {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_Reserved {
-    float tbd;  /**< @brief Reserved */
+    float tbd; /**< @brief Reserved */
 } sh2_Reserved_t;
 
 /**
@@ -249,15 +249,15 @@ typedef struct sh2_Reserved {
  *
  * See the SH-2 Reference Manual for more detail.
  */
-#define TAPDET_X      (1)
-#define TAPDET_X_POS  (2)
-#define TAPDET_Y      (4)
-#define TAPDET_Y_POS  (8)
-#define TAPDET_Z      (16)
-#define TAPDET_Z_POS  (32)
+#define TAPDET_X (1)
+#define TAPDET_X_POS (2)
+#define TAPDET_Y (4)
+#define TAPDET_Y_POS (8)
+#define TAPDET_Z (16)
+#define TAPDET_Z_POS (32)
 #define TAPDET_DOUBLE (64)
 typedef struct sh2_TapDetector {
-    uint8_t flags;  /**< @brief TapDetector.  */
+    uint8_t flags; /**< @brief TapDetector.  */
 } sh2_TapDetector_t;
 
 /**
@@ -266,7 +266,7 @@ typedef struct sh2_TapDetector {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_StepDetector {
-    uint32_t latency;  /**< @brief Step detect latency [uS].  */
+    uint32_t latency; /**< @brief Step detect latency [uS].  */
 } sh2_StepDetector_t;
 
 /**
@@ -275,8 +275,8 @@ typedef struct sh2_StepDetector {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_StepCounter {
-    uint32_t latency;  /**< @brief Step counter latency [uS].  */
-    uint16_t steps;    /**< @brief Steps counted. */
+    uint32_t latency; /**< @brief Step counter latency [uS].  */
+    uint16_t steps;   /**< @brief Steps counted. */
 } sh2_StepCounter_t;
 
 /**
@@ -331,7 +331,7 @@ typedef struct sh2_FlipDetector {
 #define PICKUP_LEVEL_TO_NOT_LEVEL (1)
 #define PICKUP_STOP_WITHIN_REGION (2)
 typedef struct sh2_PickupDetector {
-    uint16_t pickup;   /**< flag field with bits defined above. */
+    uint16_t pickup; /**< flag field with bits defined above. */
 } sh2_PickupDetector_t;
 
 /**
@@ -340,9 +340,9 @@ typedef struct sh2_PickupDetector {
  * See the SH-2 Reference Manual for more detail.
  */
 #define STABILITY_ENTERED (1)
-#define STABILITY_EXITED  (2)
+#define STABILITY_EXITED (2)
 typedef struct sh2_StabilityDetector {
-    uint16_t stability;  /**< flag field with bits defined above. */
+    uint16_t stability; /**< flag field with bits defined above. */
 } sh2_StabilityDetector_t;
 
 /**
@@ -416,13 +416,13 @@ typedef struct sh2_HeartRateMonitor {
  * See SH-2 Reference Manual for details.
  */
 typedef struct sh2_GyroIntegratedRV {
-    float i;        /**< @brief Quaternion component i */
-    float j;        /**< @brief Quaternion component j */
-    float k;        /**< @brief Quaternion component k */
-    float real;     /**< @brief Quaternion component real */
-    float angVelX;  /**< @brief Angular velocity about x [rad/s] */
-    float angVelY;  /**< @brief Angular velocity about y [rad/s] */
-    float angVelZ;  /**< @brief Angular velocity about z [rad/s] */
+    float i;       /**< @brief Quaternion component i */
+    float j;       /**< @brief Quaternion component j */
+    float k;       /**< @brief Quaternion component k */
+    float real;    /**< @brief Quaternion component real */
+    float angVelX; /**< @brief Angular velocity about x [rad/s] */
+    float angVelY; /**< @brief Angular velocity about y [rad/s] */
+    float angVelZ; /**< @brief Angular velocity about z [rad/s] */
 } sh2_GyroIntegratedRV_t;
 
 typedef struct sh2_IZroRequest {
@@ -431,7 +431,6 @@ typedef struct sh2_IZroRequest {
 } sh2_IZroRequest_t;
 
 typedef struct sh2_SensorValue {
-    
     /** Which sensor produced this event. */
     uint8_t sensorId;
 
@@ -450,7 +449,7 @@ typedef struct sh2_SensorValue {
      */
     uint8_t status; /**< @brief bits 7-5: reserved, 4-2: exponent delay, 1-0: Accuracy */
 
-    uint64_t timestamp;  /**< [uS] */
+    uint64_t timestamp; /**< [uS] */
 
     uint32_t delay; /**< @brief [uS] value is delay * 2^exponent (see status) */
 
@@ -461,17 +460,17 @@ typedef struct sh2_SensorValue {
      */
     union {
         sh2_RawAccelerometer_t rawAccelerometer;
-        sh2_Accelerometer_t accelerometer; 
-        sh2_Accelerometer_t linearAcceleration; 
-        sh2_Accelerometer_t gravity; 
-        sh2_RawGyroscope_t rawGyroscope; 
-        sh2_Gyroscope_t gyroscope; 
-        sh2_GyroscopeUncalibrated_t gyroscopeUncal; 
-        sh2_RawMagnetometer_t rawMagnetometer; 
-        sh2_MagneticField_t magneticField; 
-        sh2_MagneticFieldUncalibrated_t magneticFieldUncal; 
-        sh2_RotationVectorWAcc_t rotationVector; 
-        sh2_RotationVector_t gameRotationVector; 
+        sh2_Accelerometer_t accelerometer;
+        sh2_Accelerometer_t linearAcceleration;
+        sh2_Accelerometer_t gravity;
+        sh2_RawGyroscope_t rawGyroscope;
+        sh2_Gyroscope_t gyroscope;
+        sh2_GyroscopeUncalibrated_t gyroscopeUncal;
+        sh2_RawMagnetometer_t rawMagnetometer;
+        sh2_MagneticField_t magneticField;
+        sh2_MagneticFieldUncalibrated_t magneticFieldUncal;
+        sh2_RotationVectorWAcc_t rotationVector;
+        sh2_RotationVector_t gameRotationVector;
         sh2_RotationVectorWAcc_t geoMagRotationVector;
         sh2_Pressure_t pressure;
         sh2_AmbientLight_t ambientLight;
@@ -503,9 +502,8 @@ typedef struct sh2_SensorValue {
 
 int sh2_decodeSensorEvent(sh2_SensorValue_t *value, const sh2_SensorEvent_t *event);
 
-
 #ifdef __cplusplus
-} // extern "C"
+}  // extern "C"
 #endif
 
 #endif

@@ -1,8 +1,8 @@
 #pragma once
 
 namespace Core {
-    class Logger {
-    public:
-        static void Init();
-    };
-}
+class Logger {
+   public:
+    static void Init();
+};
+}  // namespace Core

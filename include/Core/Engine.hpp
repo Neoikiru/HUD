@@ -1,56 +1,52 @@
 #pragma once
 #include <memory>
 
-#include "Core/Types.hpp"
-#include "Core/SharedState.hpp"
 #include "Core/InteractionBridge.hpp"
-
+#include "Core/SharedState.hpp"
+#include "Core/Types.hpp"
 #include "Drivers/GpioButton.hpp"
-
 #include "Perception/HandTracking/HandTracking.hpp"
 #include "Perception/PerceptionService.hpp"
-
-#include "Rendering/SpatialUIManager.hpp"
-#include "Rendering/DisplayManager.hpp"
 #include "Rendering/ARCamera.hpp"
-
+#include "Rendering/DisplayManager.hpp"
+#include "Rendering/SpatialUIManager.hpp"
 #include "UI/SpatialWindow.hpp"
 
 namespace Core {
 
-    class Engine {
-    public:
-        Engine();
-        ~Engine();
+class Engine {
+   public:
+    Engine();
+    ~Engine();
 
-        void Initialize(const EngineConfig& config);
-        void Run();
+    void Initialize(const EngineConfig& config);
+    void Run();
 
-    private:
-        void HandleInput();
-        void Update(double dt);
-        void Render();
+   private:
+    void HandleInput();
+    void Update(double dt);
+    void Render();
 
-        bool m_isRunning;
-        
-        // Modules
-        std::shared_ptr<SharedState> m_state;
-        Rendering::DisplayManager m_display;
-        std::unique_ptr<Perception::PerceptionService> m_perception;
-        std::unique_ptr<Perception::HandTracker> m_handTracker;
+    bool m_isRunning;
 
-        // Input (Main thread)
-        std::unique_ptr<Drivers::GpioButton> m_actionButton;
-        
-        SDL_Texture* m_cameraTexture = nullptr;
-        std::vector<uint32_t> m_conversionBuffer;
+    // Modules
+    std::shared_ptr<SharedState> m_state;
+    Rendering::DisplayManager m_display;
+    std::unique_ptr<Perception::PerceptionService> m_perception;
+    std::unique_ptr<Perception::HandTracker> m_handTracker;
 
-        Rendering::ARCamera m_arCamera;
-        std::vector<std::unique_ptr<UI::SpatialWindow> > m_windows;
+    // Input (Main thread)
+    std::unique_ptr<Drivers::GpioButton> m_actionButton;
 
-        std::shared_ptr<Rendering::SpatialUIManager> m_uiManager;
+    SDL_Texture* m_cameraTexture = nullptr;
+    std::vector<uint32_t> m_conversionBuffer;
 
-        std::unique_ptr<InteractionBridge> m_interactionBridge;
-    };
+    Rendering::ARCamera m_arCamera;
+    std::vector<std::unique_ptr<UI::SpatialWindow> > m_windows;
 
-}
+    std::shared_ptr<Rendering::SpatialUIManager> m_uiManager;
+
+    std::unique_ptr<InteractionBridge> m_interactionBridge;
+};
+
+}  // namespace Core

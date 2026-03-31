@@ -15,54 +15,50 @@
 #ifndef HAND_H
 #define HAND_H
 
-#include <opencv2/core/core.hpp>
 #include <net.h>
+
+#include <opencv2/core/core.hpp>
+
 #include "landmark.h"
 
-struct Object
-{
+struct Object {
     cv::Rect_<float> rect;
     int label;
     float prob;
     cv::Point2f pts[21];
-   
 };
 
-struct PalmObject
-{
-    float  score;
+struct PalmObject {
+    float score;
     cv::Rect rect;
-    cv::Point2f  landmarks[7];
-    float  rotation;
+    cv::Point2f landmarks[7];
+    float rotation;
 
-    float  hand_cx;
-    float  hand_cy;
-    float  hand_w;
-    float  hand_h;
-    cv::Point2f  hand_pos[4];
+    float hand_cx;
+    float hand_cy;
+    float hand_w;
+    float hand_h;
+    cv::Point2f hand_pos[4];
 
     cv::Mat trans_image;
     std::vector<cv::Point2f> skeleton;
 };
-struct DetectRegion
-{
+struct DetectRegion {
     float score;
     cv::Point2f topleft;
     cv::Point2f btmright;
     cv::Point2f landmarks[7];
 
-    float  rotation;
-    cv::Point2f  roi_center;
-    cv::Point2f  roi_size;
-    cv::Point2f  roi_coord[4];
+    float rotation;
+    cv::Point2f roi_center;
+    cv::Point2f roi_size;
+    cv::Point2f roi_coord[4];
 };
-struct Anchor
-{
+struct Anchor {
     float x_center, y_center, w, h;
 };
 
-struct AnchorsParams
-{
+struct AnchorsParams {
     int input_size_width;
     int input_size_height;
 
@@ -75,23 +71,23 @@ struct AnchorsParams
     int num_layers;
     std::vector<int> feature_map_width;
     std::vector<int> feature_map_height;
-    std::vector<int>   strides;
+    std::vector<int> strides;
     std::vector<float> aspect_ratios;
-
 };
 
-class Hand
-{
-public:
+class Hand {
+   public:
     Hand();
 
-    int load(int target_size, const float* mean_vals, const float* norm_vals, bool use_gpu = false, int num_threads = 1);
+    int load(int target_size, const float* mean_vals, const float* norm_vals, bool use_gpu = false,
+             int num_threads = 1);
 
-    int detect(const cv::Mat& rgb, std::vector<PalmObject>& objects, float prob_threshold = 0.55f, float nms_threshold = 0.3f);
+    int detect(const cv::Mat& rgb, std::vector<PalmObject>& objects, float prob_threshold = 0.55f,
+               float nms_threshold = 0.3f);
 
     int draw(cv::Mat& rgb, const std::vector<PalmObject>& objects);
 
-private:
+   private:
     ncnn::UnlockedPoolAllocator blob_pool_allocator;
     ncnn::PoolAllocator workspace_pool_allocator;
 
@@ -104,4 +100,4 @@ private:
     std::vector<Anchor> anchors;
 };
 
-#endif // HAND_H
+#endif  // HAND_H

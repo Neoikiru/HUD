@@ -25,7 +25,8 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -33,15 +34,15 @@
  */
 #pragma once
 
-#include <iostream>
-#include <stdexcept>
 #include <cmath>
 #include <ctime>
+#include <iostream>
+#include <stdexcept>
 
 // -----------------------------------------------------------------
 // Utilities
 
-typedef double TimeStamp; // In seconds
+typedef double TimeStamp;  // In seconds
 
 static const TimeStamp UndefinedTime = -1.0;
 
@@ -53,7 +54,7 @@ class LowPassFilter {
 
     void setAlpha(double alpha);
 
-public:
+   public:
     LowPassFilter(double alpha, double initval = 0.0);
 
     double filter(double value);
@@ -80,47 +81,47 @@ class OneEuroFilter {
 
     double alpha(double cutoff);
 
-public:
+   public:
     /**
-   * @brief Creates the filter and set its parameters
-   * @param freq An estimate of the frequency in Hz of the signal (> 0), if timestamps are not available.
-   * @param mincutoff Min cutoff frequency in Hz (> 0). Lower values allow to remove more jitter.
-   * @param beta_ Parameter to reduce latency (> 0).
-   * @param dcutoff Used to filter the derivates. 1 Hz by default. Change this parameter if you know what you are doing.
-   */
-    OneEuroFilter(double freq,
-                  double mincutoff = 1.0, double beta_ = 0.0, double dcutoff = 1.0);
+     * @brief Creates the filter and set its parameters
+     * @param freq An estimate of the frequency in Hz of the signal (> 0), if timestamps are not available.
+     * @param mincutoff Min cutoff frequency in Hz (> 0). Lower values allow to remove more jitter.
+     * @param beta_ Parameter to reduce latency (> 0).
+     * @param dcutoff Used to filter the derivates. 1 Hz by default. Change this parameter if you know what you are
+     * doing.
+     */
+    OneEuroFilter(double freq, double mincutoff = 1.0, double beta_ = 0.0, double dcutoff = 1.0);
 
     /**
-   * @brief Filter the noisy signal
-   * @param value Noisy value to filter
-   * @param timestamp (optional) timestamp in seconds
-   * @return The filtered value
-   */
+     * @brief Filter the noisy signal
+     * @param value Noisy value to filter
+     * @param timestamp (optional) timestamp in seconds
+     * @return The filtered value
+     */
     double filter(double value, TimeStamp timestamp = UndefinedTime);
 
     /**
-   * @brief Sets the frequency of the signal
-   * @param f An estimate of the frequency in Hz of the signal (> 0), if timestamps are not available.
-   */
+     * @brief Sets the frequency of the signal
+     * @param f An estimate of the frequency in Hz of the signal (> 0), if timestamps are not available.
+     */
     void setFrequency(double f);
 
     /**
-   * @brief Sets the filter min cutoff frequency
-   * @param mc Min cutoff frequency in Hz (> 0). Lower values allow to remove more jitter.
-   */
+     * @brief Sets the filter min cutoff frequency
+     * @param mc Min cutoff frequency in Hz (> 0). Lower values allow to remove more jitter.
+     */
     void setMinCutoff(double mc);
 
     /**
-   * @brief Sets the Beta parameter
-   * @param b Parameter to reduce latency (> 0).
-   */
+     * @brief Sets the Beta parameter
+     * @param b Parameter to reduce latency (> 0).
+     */
     void setBeta(double b);
 
     /**
-   * @brief Sets the Cutoff frequency for derivates
-   * @param dc Used to filter the derivates. 1 Hz by default. Change this parameter if you know what you are doing.
-   */
+     * @brief Sets the Cutoff frequency for derivates
+     * @param dc Used to filter the derivates. 1 Hz by default. Change this parameter if you know what you are doing.
+     */
     void setDerivateCutoff(double dc);
 
     ~OneEuroFilter(void);

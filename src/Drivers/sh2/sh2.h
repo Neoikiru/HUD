@@ -2,7 +2,7 @@
  * Copyright 2015-2018 Hillcrest Laboratories, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License and 
+ * you may not use this file except in compliance with the License and
  * any applicable agreements you may have with Hillcrest Laboratories, Inc.
  * You may obtain a copy of the License at
  *
@@ -31,8 +31,8 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "sh2_hal.h"
 
@@ -53,7 +53,7 @@ typedef struct sh2_SensorEvent {
     uint8_t report[SH2_MAX_SENSOR_EVENT_LEN];
 } sh2_SensorEvent_t;
 
-typedef void (sh2_SensorCallback_t)(void * cookie, sh2_SensorEvent_t *pEvent);
+typedef void(sh2_SensorCallback_t)(void *cookie, sh2_SensorEvent_t *pEvent);
 
 /**
  * @brief Product Id value
@@ -134,30 +134,30 @@ typedef uint8_t sh2_SensorId_t;
  */
 typedef struct sh2_SensorConfig {
     /* Change sensitivity enabled */
-    bool changeSensitivityEnabled;  /**< @brief Enable reports on change */
+    bool changeSensitivityEnabled; /**< @brief Enable reports on change */
 
     /* Change sensitivity - true if relative; false if absolute */
-    bool changeSensitivityRelative;  /**< @brief Change reports relative (vs absolute) */
+    bool changeSensitivityRelative; /**< @brief Change reports relative (vs absolute) */
 
     /* Wake-up enabled */
-    bool wakeupEnabled;  /**< @brief Wake host on event */
+    bool wakeupEnabled; /**< @brief Wake host on event */
 
     /* Always on enabled */
-    bool alwaysOnEnabled;  /**< @brief Sensor remains on in sleep state */
+    bool alwaysOnEnabled; /**< @brief Sensor remains on in sleep state */
     /* 16-bit signed fixed point integer representing the value a
      * sensor output must exceed in order to trigger another input
      * report. A setting of 0 causes all reports to be sent.
      */
-    uint16_t changeSensitivity;  /**< @brief Report-on-change threshold */
+    uint16_t changeSensitivity; /**< @brief Report-on-change threshold */
 
     /* Interval in microseconds between asynchronous input reports. */
-    uint32_t reportInterval_us;  /**< @brief [uS] Report interval */
+    uint32_t reportInterval_us; /**< @brief [uS] Report interval */
 
     /* Reserved field, not used. */
-    uint32_t batchInterval_us;  /**< @brief [uS] Batch interval */
+    uint32_t batchInterval_us; /**< @brief [uS] Batch interval */
 
     /* Meaning is sensor specific */
-    uint32_t sensorSpecific;  /**< @brief See SH-2 Reference Manual for details. */
+    uint32_t sensorSpecific; /**< @brief See SH-2 Reference Manual for details. */
 } sh2_SensorConfig_t;
 
 /**
@@ -166,25 +166,25 @@ typedef struct sh2_SensorConfig {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_SensorMetadata {
-    uint8_t meVersion;   /**< @brief Motion Engine Version */
-    uint8_t mhVersion;  /**< @brief Motion Hub Version */
-    uint8_t shVersion;  /**< @brief SensorHub Version */
-    uint32_t range;  /**< @brief Same units as sensor reports */
-    uint32_t resolution;  /**< @brief Same units as sensor reports */
-    uint16_t revision;  /**< @brief Metadata record format revision */
-    uint16_t power_mA;    /**< @brief [mA] Fixed point 16Q10 format */
-    uint32_t minPeriod_uS;  /**< @brief [uS] */
-    uint32_t maxPeriod_uS;  /**< @brief [uS] */
-    uint32_t fifoReserved;  /**< @brief (Unused) */
-    uint32_t fifoMax;  /**< @brief (Unused) */
+    uint8_t meVersion;          /**< @brief Motion Engine Version */
+    uint8_t mhVersion;          /**< @brief Motion Hub Version */
+    uint8_t shVersion;          /**< @brief SensorHub Version */
+    uint32_t range;             /**< @brief Same units as sensor reports */
+    uint32_t resolution;        /**< @brief Same units as sensor reports */
+    uint16_t revision;          /**< @brief Metadata record format revision */
+    uint16_t power_mA;          /**< @brief [mA] Fixed point 16Q10 format */
+    uint32_t minPeriod_uS;      /**< @brief [uS] */
+    uint32_t maxPeriod_uS;      /**< @brief [uS] */
+    uint32_t fifoReserved;      /**< @brief (Unused) */
+    uint32_t fifoMax;           /**< @brief (Unused) */
     uint32_t batchBufferBytes;  /**< @brief (Unused) */
-    uint16_t qPoint1;     /**< @brief q point for sensor values */
-    uint16_t qPoint2;     /**< @brief q point for accuracy or bias fields */
-    uint16_t qPoint3;     /**< @brief q point for sensor data change sensitivity */
-    uint32_t vendorIdLen; /**< @brief [bytes] */
-    char vendorId[48];  /**< @brief Vendor name and part number */
-    uint32_t sensorSpecificLen;  /**< @brief [bytes] */
-    uint8_t sensorSpecific[48];  /**< @brief See SH-2 Reference Manual */
+    uint16_t qPoint1;           /**< @brief q point for sensor values */
+    uint16_t qPoint2;           /**< @brief q point for accuracy or bias fields */
+    uint16_t qPoint3;           /**< @brief q point for sensor data change sensitivity */
+    uint32_t vendorIdLen;       /**< @brief [bytes] */
+    char vendorId[48];          /**< @brief Vendor name and part number */
+    uint32_t sensorSpecificLen; /**< @brief [bytes] */
+    uint8_t sensorSpecific[48]; /**< @brief See SH-2 Reference Manual */
 } sh2_SensorMetadata_t;
 
 /**
@@ -193,12 +193,12 @@ typedef struct sh2_SensorMetadata {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef struct sh2_ErrorRecord {
-    uint8_t severity;   /**< @brief Error severity, 0: most severe. */
-    uint8_t sequence;   /**< @brief Sequence number (by severity) */
-    uint8_t source;     /**< @brief 1-MotionEngine, 2-MotionHub, 3-SensorHub, 4-Chip  */
-    uint8_t error;      /**< @brief See SH-2 Reference Manual */
-    uint8_t module;     /**< @brief See SH-2 Reference Manual */
-    uint8_t code;       /**< @brief See SH-2 Reference Manual */
+    uint8_t severity; /**< @brief Error severity, 0: most severe. */
+    uint8_t sequence; /**< @brief Sequence number (by severity) */
+    uint8_t source;   /**< @brief 1-MotionEngine, 2-MotionHub, 3-SensorHub, 4-Chip  */
+    uint8_t error;    /**< @brief See SH-2 Reference Manual */
+    uint8_t module;   /**< @brief See SH-2 Reference Manual */
+    uint8_t code;     /**< @brief See SH-2 Reference Manual */
 } sh2_ErrorRecord_t;
 
 /**
@@ -230,9 +230,9 @@ typedef enum sh2_TareBasis {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef enum sh2_TareAxis {
-    SH2_TARE_X = 1,  /**< @brief sh2_tareNow() axes bit field */
-    SH2_TARE_Y = 2,  /**< @brief sh2_tareNow() axes bit field */
-    SH2_TARE_Z = 4,  /**< @brief sh2_tareNow() axes bit field */
+    SH2_TARE_X = 1, /**< @brief sh2_tareNow() axes bit field */
+    SH2_TARE_Y = 2, /**< @brief sh2_tareNow() axes bit field */
+    SH2_TARE_Z = 4, /**< @brief sh2_tareNow() axes bit field */
 } sh2_TareAxis_t;
 
 /**
@@ -253,9 +253,9 @@ typedef struct sh2_Quaternion {
  * See the SH-2 Reference Manual for more detail.
  */
 typedef enum {
-    SH2_OSC_INTERNAL    = 0,
+    SH2_OSC_INTERNAL = 0,
     SH2_OSC_EXT_CRYSTAL = 1,
-    SH2_OSC_EXT_CLOCK   = 2,
+    SH2_OSC_EXT_CLOCK = 2,
 } sh2_OscType_t;
 
 /**
@@ -276,79 +276,79 @@ typedef enum {
 } sh2_CalStatus_t;
 
 // FRS Record Ids
-#define STATIC_CALIBRATION_AGM                   (0x7979)
-#define NOMINAL_CALIBRATION                      (0x4D4D)
-#define STATIC_CALIBRATION_SRA                   (0x8A8A)
-#define NOMINAL_CALIBRATION_SRA                  (0x4E4E)
-#define DYNAMIC_CALIBRATION                      (0x1F1F)
-#define ME_POWER_MGMT                            (0xD3E2)
-#define SYSTEM_ORIENTATION                       (0x2D3E)
-#define ACCEL_ORIENTATION                        (0x2D41)
-#define SCREEN_ACCEL_ORIENTATION                 (0x2D43)
-#define GYROSCOPE_ORIENTATION                    (0x2D46)
-#define MAGNETOMETER_ORIENTATION                 (0x2D4C)
-#define ARVR_STABILIZATION_RV                    (0x3E2D)
-#define ARVR_STABILIZATION_GRV                   (0x3E2E)
-#define TAP_DETECT_CONFIG                        (0xC269)
-#define SIG_MOTION_DETECT_CONFIG                 (0xC274)
-#define SHAKE_DETECT_CONFIG                      (0x7D7D)
-#define MAX_FUSION_PERIOD                        (0xD7D7)
-#define SERIAL_NUMBER                            (0x4B4B)
-#define ES_PRESSURE_CAL                          (0x39AF)
-#define ES_TEMPERATURE_CAL                       (0x4D20)
-#define ES_HUMIDITY_CAL                          (0x1AC9)
-#define ES_AMBIENT_LIGHT_CAL                     (0x39B1)
-#define ES_PROXIMITY_CAL                         (0x4DA2)
-#define ALS_CAL                                  (0xD401)
-#define PROXIMITY_SENSOR_CAL                     (0xD402)
-#define PICKUP_DETECTOR_CONFIG                   (0x1B2A)
-#define FLIP_DETECTOR_CONFIG                     (0xFC94)
-#define STABILITY_DETECTOR_CONFIG                (0xED85)
-#define ACTIVITY_TRACKER_CONFIG                  (0xED88)
-#define SLEEP_DETECTOR_CONFIG                    (0xED87)
-#define TILT_DETECTOR_CONFIG                     (0xED89)
-#define POCKET_DETECTOR_CONFIG                   (0xEF27)
-#define CIRCLE_DETECTOR_CONFIG                   (0xEE51)
-#define USER_RECORD                              (0x74B4)
-#define ME_TIME_SOURCE_SELECT                    (0xD403)
-#define UART_FORMAT                              (0xA1A1)
-#define GYRO_INTEGRATED_RV_CONFIG                (0xA1A2)
-#define FRS_ID_META_RAW_ACCELEROMETER            (0xE301)
-#define FRS_ID_META_ACCELEROMETER                (0xE302)
-#define FRS_ID_META_LINEAR_ACCELERATION          (0xE303)
-#define FRS_ID_META_GRAVITY                      (0xE304)
-#define FRS_ID_META_RAW_GYROSCOPE                (0xE305)
-#define FRS_ID_META_GYROSCOPE_CALIBRATED         (0xE306)
-#define FRS_ID_META_GYROSCOPE_UNCALIBRATED       (0xE307)
-#define FRS_ID_META_RAW_MAGNETOMETER             (0xE308)
-#define FRS_ID_META_MAGNETIC_FIELD_CALIBRATED    (0xE309)
-#define FRS_ID_META_MAGNETIC_FIELD_UNCALIBRATED  (0xE30A)
-#define FRS_ID_META_ROTATION_VECTOR              (0xE30B)
-#define FRS_ID_META_GAME_ROTATION_VECTOR         (0xE30C)
-#define FRS_ID_META_GEOMAGNETIC_ROTATION_VECTOR  (0xE30D)
-#define FRS_ID_META_PRESSURE                     (0xE30E)
-#define FRS_ID_META_AMBIENT_LIGHT                (0xE30F)
-#define FRS_ID_META_HUMIDITY                     (0xE310)
-#define FRS_ID_META_PROXIMITY                    (0xE311)
-#define FRS_ID_META_TEMPERATURE                  (0xE312)
-#define FRS_ID_META_TAP_DETECTOR                 (0xE313)
-#define FRS_ID_META_STEP_DETECTOR                (0xE314)
-#define FRS_ID_META_STEP_COUNTER                 (0xE315)
-#define FRS_ID_META_SIGNIFICANT_MOTION           (0xE316)
-#define FRS_ID_META_STABILITY_CLASSIFIER         (0xE317)
-#define FRS_ID_META_SHAKE_DETECTOR               (0xE318)
-#define FRS_ID_META_FLIP_DETECTOR                (0xE319)
-#define FRS_ID_META_PICKUP_DETECTOR              (0xE31A)
-#define FRS_ID_META_STABILITY_DETECTOR           (0xE31B)
+#define STATIC_CALIBRATION_AGM (0x7979)
+#define NOMINAL_CALIBRATION (0x4D4D)
+#define STATIC_CALIBRATION_SRA (0x8A8A)
+#define NOMINAL_CALIBRATION_SRA (0x4E4E)
+#define DYNAMIC_CALIBRATION (0x1F1F)
+#define ME_POWER_MGMT (0xD3E2)
+#define SYSTEM_ORIENTATION (0x2D3E)
+#define ACCEL_ORIENTATION (0x2D41)
+#define SCREEN_ACCEL_ORIENTATION (0x2D43)
+#define GYROSCOPE_ORIENTATION (0x2D46)
+#define MAGNETOMETER_ORIENTATION (0x2D4C)
+#define ARVR_STABILIZATION_RV (0x3E2D)
+#define ARVR_STABILIZATION_GRV (0x3E2E)
+#define TAP_DETECT_CONFIG (0xC269)
+#define SIG_MOTION_DETECT_CONFIG (0xC274)
+#define SHAKE_DETECT_CONFIG (0x7D7D)
+#define MAX_FUSION_PERIOD (0xD7D7)
+#define SERIAL_NUMBER (0x4B4B)
+#define ES_PRESSURE_CAL (0x39AF)
+#define ES_TEMPERATURE_CAL (0x4D20)
+#define ES_HUMIDITY_CAL (0x1AC9)
+#define ES_AMBIENT_LIGHT_CAL (0x39B1)
+#define ES_PROXIMITY_CAL (0x4DA2)
+#define ALS_CAL (0xD401)
+#define PROXIMITY_SENSOR_CAL (0xD402)
+#define PICKUP_DETECTOR_CONFIG (0x1B2A)
+#define FLIP_DETECTOR_CONFIG (0xFC94)
+#define STABILITY_DETECTOR_CONFIG (0xED85)
+#define ACTIVITY_TRACKER_CONFIG (0xED88)
+#define SLEEP_DETECTOR_CONFIG (0xED87)
+#define TILT_DETECTOR_CONFIG (0xED89)
+#define POCKET_DETECTOR_CONFIG (0xEF27)
+#define CIRCLE_DETECTOR_CONFIG (0xEE51)
+#define USER_RECORD (0x74B4)
+#define ME_TIME_SOURCE_SELECT (0xD403)
+#define UART_FORMAT (0xA1A1)
+#define GYRO_INTEGRATED_RV_CONFIG (0xA1A2)
+#define FRS_ID_META_RAW_ACCELEROMETER (0xE301)
+#define FRS_ID_META_ACCELEROMETER (0xE302)
+#define FRS_ID_META_LINEAR_ACCELERATION (0xE303)
+#define FRS_ID_META_GRAVITY (0xE304)
+#define FRS_ID_META_RAW_GYROSCOPE (0xE305)
+#define FRS_ID_META_GYROSCOPE_CALIBRATED (0xE306)
+#define FRS_ID_META_GYROSCOPE_UNCALIBRATED (0xE307)
+#define FRS_ID_META_RAW_MAGNETOMETER (0xE308)
+#define FRS_ID_META_MAGNETIC_FIELD_CALIBRATED (0xE309)
+#define FRS_ID_META_MAGNETIC_FIELD_UNCALIBRATED (0xE30A)
+#define FRS_ID_META_ROTATION_VECTOR (0xE30B)
+#define FRS_ID_META_GAME_ROTATION_VECTOR (0xE30C)
+#define FRS_ID_META_GEOMAGNETIC_ROTATION_VECTOR (0xE30D)
+#define FRS_ID_META_PRESSURE (0xE30E)
+#define FRS_ID_META_AMBIENT_LIGHT (0xE30F)
+#define FRS_ID_META_HUMIDITY (0xE310)
+#define FRS_ID_META_PROXIMITY (0xE311)
+#define FRS_ID_META_TEMPERATURE (0xE312)
+#define FRS_ID_META_TAP_DETECTOR (0xE313)
+#define FRS_ID_META_STEP_DETECTOR (0xE314)
+#define FRS_ID_META_STEP_COUNTER (0xE315)
+#define FRS_ID_META_SIGNIFICANT_MOTION (0xE316)
+#define FRS_ID_META_STABILITY_CLASSIFIER (0xE317)
+#define FRS_ID_META_SHAKE_DETECTOR (0xE318)
+#define FRS_ID_META_FLIP_DETECTOR (0xE319)
+#define FRS_ID_META_PICKUP_DETECTOR (0xE31A)
+#define FRS_ID_META_STABILITY_DETECTOR (0xE31B)
 #define FRS_ID_META_PERSONAL_ACTIVITY_CLASSIFIER (0xE31C)
-#define FRS_ID_META_SLEEP_DETECTOR               (0xE31D)
-#define FRS_ID_META_TILT_DETECTOR                (0xE31E)
-#define FRS_ID_META_POCKET_DETECTOR              (0xE31F)
-#define FRS_ID_META_CIRCLE_DETECTOR              (0xE320)
-#define FRS_ID_META_HEART_RATE_MONITOR           (0xE321)
-#define FRS_ID_META_ARVR_STABILIZED_RV           (0xE322)
-#define FRS_ID_META_ARVR_STABILIZED_GRV          (0xE323)
-#define FRS_ID_META_GYRO_INTEGRATED_RV           (0xE324)
+#define FRS_ID_META_SLEEP_DETECTOR (0xE31D)
+#define FRS_ID_META_TILT_DETECTOR (0xE31E)
+#define FRS_ID_META_POCKET_DETECTOR (0xE31F)
+#define FRS_ID_META_CIRCLE_DETECTOR (0xE320)
+#define FRS_ID_META_HEART_RATE_MONITOR (0xE321)
+#define FRS_ID_META_ARVR_STABILIZED_RV (0xE322)
+#define FRS_ID_META_ARVR_STABILIZED_GRV (0xE323)
+#define FRS_ID_META_GYRO_INTEGRATED_RV (0xE324)
 
 /**
  * @brief Interactive ZRO Motion Intent
@@ -374,12 +374,11 @@ typedef enum {
     SH2_IZRO_MR_STATIONARY_URGENT,
 } sh2_IZroMotionRequest_t;
 
-
 /**
-* @brief Asynchronous Event
-*
-* Represents reset events and other non-sensor events received from SH-2 sensor hub.
-*/
+ * @brief Asynchronous Event
+ *
+ * Represents reset events and other non-sensor events received from SH-2 sensor hub.
+ */
 
 enum sh2_AsyncEventId_e {
     SH2_RESET,
@@ -410,8 +409,7 @@ typedef struct sh2_AsyncEvent {
     };
 } sh2_AsyncEvent_t;
 
-typedef void (sh2_EventCallback_t)(void * cookie, sh2_AsyncEvent_t *pEvent);
-
+typedef void(sh2_EventCallback_t)(void *cookie, sh2_AsyncEvent_t *pEvent);
 
 /***************************************************************************************
  * Public API
@@ -432,13 +430,12 @@ typedef void (sh2_EventCallback_t)(void * cookie, sh2_AsyncEvent_t *pEvent);
  * @param  eventCookie Will be passed to eventCallback.
  * @return SH2_OK (0), on success.  Negative value from sh2_err.h on error.
  */
-int sh2_open(sh2_Hal_t *pHal,
-             sh2_EventCallback_t *eventCallback, void *eventCookie);
+int sh2_open(sh2_Hal_t *pHal, sh2_EventCallback_t *eventCallback, void *eventCookie);
 
 /**
  * @brief Close a session with a sensor hub.
  *
- * This should be called at the end of a sensor hub session.  
+ * This should be called at the end of a sensor hub session.
  * The underlying SHTP and HAL instances will be closed.
  *
  */
@@ -572,7 +569,7 @@ int sh2_clearCounts(sh2_SensorId_t sensorId);
  * @param  basis Which rotation vector to use as the basis for Tare adjustment.
  * @return SH2_OK (0), on success.  Negative value from sh2_err.h on error.
  */
-int sh2_setTareNow(uint8_t axes,    // SH2_TARE_X | SH2_TARE_Y | SH2_TARE_Z
+int sh2_setTareNow(uint8_t axes,  // SH2_TARE_X | SH2_TARE_Y | SH2_TARE_Z
                    sh2_TareBasis_t basis);
 
 /**
@@ -621,8 +618,8 @@ int sh2_getOscType(sh2_OscType_t *pOscType);
 
 // Flags for sensors field of sh_calConfig
 #define SH2_CAL_ACCEL (0x01)
-#define SH2_CAL_GYRO  (0x02)
-#define SH2_CAL_MAG   (0x04)
+#define SH2_CAL_GYRO (0x02)
+#define SH2_CAL_MAG (0x04)
 #define SH2_CAL_PLANAR (0x08)
 
 /**
@@ -689,7 +686,7 @@ int sh2_finishCal(sh2_CalStatus_t *status);
 int sh2_setIZro(sh2_IZroMotionIntent_t intent);
 
 #ifdef __cplusplus
-} // extern "C"
+}  // extern "C"
 #endif
 
 #endif
