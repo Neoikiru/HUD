@@ -66,16 +66,16 @@ namespace Core {
         m_arCamera.Init(m_state);
 
         // Initialize test windows
-        auto demoCube = std::make_unique<DemoCubeWindow>();
+        auto demoCube = std::make_unique<UI::DemoCubeWindow>();
         demoCube->Init();
         demoCube->setVisible(true);
-        demoCube->setLockMode(LockMode::World);
+        demoCube->setLockMode(UI::LockMode::World);
         m_windows.push_back(std::move(demoCube));
 
-        auto handTrackingWindow = std::make_unique<HandTrackingWindow>(m_state);
+        auto handTrackingWindow = std::make_unique<UI::HandTrackingWindow>(m_state);
         handTrackingWindow->Init();
         handTrackingWindow->setVisible(true);
-        handTrackingWindow->setLockMode(LockMode::World);
+        handTrackingWindow->setLockMode(UI::LockMode::World);
         m_windows.push_back(std::move(handTrackingWindow));
 
         // Create panel with 300x200 atlas slice
@@ -85,7 +85,7 @@ namespace Core {
         // Position 1.5m forward and scale to 0.45
         mainDashboard->transform.position = glm::vec3(0.0f, 0.2f, -1.5f);
         mainDashboard->transform.scale = glm::vec3(0.45f, 0.45f, 1.0f);
-        mainDashboard->setLockMode(LockMode::Body);
+        mainDashboard->setLockMode(UI::LockMode::Body);
 
         // Attach telemetry widget
         auto telemetryWidget = std::make_shared<UI::DynamicTextWidget>([this]() {
@@ -113,7 +113,7 @@ namespace Core {
         // Position in world space
         smartHomePanel->transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
         smartHomePanel->transform.scale = glm::vec3(0.3f, 0.15f, 1.0f);
-        smartHomePanel->setLockMode(LockMode::World);
+        smartHomePanel->setLockMode(UI::LockMode::World);
 
         // Add Home Assistant button
         auto lampButton = std::make_shared<UI::ButtonWidget>("Toggle Desk Lamp", []() {
@@ -248,13 +248,13 @@ namespace Core {
         for (auto &window: m_windows) {
             if (!window->isVisible()) continue;
             switch (window->getLockMode()) {
-                case LockMode::World:
+                case UI::LockMode::World:
                     window->Render(m_arCamera.GetWorldMVP());
                     break;
-                case LockMode::Body:
+                case UI::LockMode::Body:
                     window->Render(m_arCamera.GetBodyMVP());
                     break;
-                case LockMode::Head:
+                case UI::LockMode::Head:
                     window->Render(m_arCamera.GetHUDMVP());
                     break;
             }

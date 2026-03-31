@@ -1,24 +1,30 @@
 #pragma once
 
-#include "UI/SpatialWindow.hpp"
+#include "SpatialWindow.hpp"
 
-class DemoCubeWindow : public SpatialWindow {
-public:
-    DemoCubeWindow() = default;
-    ~DemoCubeWindow() override = default;
+namespace UI {
+    class DemoCubeWindow : public SpatialWindow {
+    public:
+        DemoCubeWindow() = default;
 
-    void Init() override;
-    void Update(float deltaTime) override;
-    void Render(const glm::mat4& viewProjectionMatrix) override;
-    void Destroy() override;
+        ~DemoCubeWindow() override = default;
 
-private:
-    unsigned int VAO = 0, VBO = 0, EBO = 0;
-    unsigned int arrowVAO = 0, arrowVBO = 0;
-    unsigned int shaderProgram = 0;
+        void Init() override;
 
-    unsigned int axisVAO = 0, axisVBO = 0;
-    glm::quat m_currentImu = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        void Update(float deltaTime) override;
 
-    void CompileShaders();
-};
+        void Render(const glm::mat4 &viewProjectionMatrix) override;
+
+        void Destroy() override;
+
+    private:
+        unsigned int m_VAO = 0, m_VBO = 0, m_EBO = 0;
+        unsigned int m_arrowVAO = 0, m_arrowVBO = 0;
+        unsigned int m_shaderProgram = 0;
+
+        unsigned int m_axisVAO = 0, m_axisVBO = 0;
+        glm::quat m_currentImu = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+
+        void CompileShaders();
+    };
+}

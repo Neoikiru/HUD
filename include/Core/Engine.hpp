@@ -46,7 +46,7 @@ namespace Core {
         std::vector<uint32_t> m_conversionBuffer;
 
         Rendering::ARCamera m_arCamera;
-        std::vector<std::unique_ptr<SpatialWindow>> m_windows;
+        std::vector<std::unique_ptr<UI::SpatialWindow> > m_windows;
 
         std::shared_ptr<Rendering::SpatialUIManager> m_uiManager;
 

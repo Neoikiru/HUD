@@ -4,7 +4,7 @@
 #include <cmath>
 #include <SDL3/SDL_log.h>
 
-void DemoCubeWindow::Init() {
+void UI::DemoCubeWindow::Init() {
     transform.position = glm::vec3(0.0f, 0.0f, -1.5f);
     transform.scale = glm::vec3(0.1f, 0.1f, 0.1f);
 
@@ -19,14 +19,14 @@ void DemoCubeWindow::Init() {
         0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
     };
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &m_VAO);
+    glGenBuffers(1, &m_VBO);
+    glGenBuffers(1, &m_EBO);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindVertexArray(m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
@@ -40,11 +40,11 @@ void DemoCubeWindow::Init() {
         -0.10f, -0.10f, 0.0f
     };
 
-    glGenVertexArrays(1, &arrowVAO);
-    glGenBuffers(1, &arrowVBO);
+    glGenVertexArrays(1, &m_arrowVAO);
+    glGenBuffers(1, &m_arrowVBO);
 
-    glBindVertexArray(arrowVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, arrowVBO);
+    glBindVertexArray(m_arrowVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_arrowVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(arrowVerts), arrowVerts, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
@@ -80,10 +80,10 @@ void DemoCubeWindow::Init() {
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f
     };
 
-    glGenVertexArrays(1, &axisVAO);
-    glGenBuffers(1, &axisVBO);
-    glBindVertexArray(axisVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
+    glGenVertexArrays(1, &m_axisVAO);
+    glGenBuffers(1, &m_axisVBO);
+    glBindVertexArray(m_axisVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_axisVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(headsetVerts), headsetVerts, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
@@ -92,17 +92,17 @@ void DemoCubeWindow::Init() {
     glBindVertexArray(0);
 }
 
-void DemoCubeWindow::Update(float deltaTime) {
+void UI::DemoCubeWindow::Update(float deltaTime) {
     glm::quat spin = glm::angleAxis(glm::radians(45.0f * deltaTime), glm::vec3(0.5f, 1.0f, 0.0f));
     transform.rotation = spin * transform.rotation;
 }
 
-void DemoCubeWindow::Render(const glm::mat4 &viewProjectionMatrix) {
+void UI::DemoCubeWindow::Render(const glm::mat4 &viewProjectionMatrix) {
     if (!m_isVisible) return;
 
-    glUseProgram(shaderProgram);
-    unsigned int mvpLoc = glGetUniformLocation(shaderProgram, "u_MVP");
-    unsigned int colorLoc = glGetUniformLocation(shaderProgram, "u_Color");
+    glUseProgram(m_shaderProgram);
+    unsigned int mvpLoc = glGetUniformLocation(m_shaderProgram, "u_MVP");
+    unsigned int colorLoc = glGetUniformLocation(m_shaderProgram, "u_Color");
 
     glm::mat4 modelMatrix = transform.GetModelMatrix();
 
@@ -111,18 +111,18 @@ void DemoCubeWindow::Render(const glm::mat4 &viewProjectionMatrix) {
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &cubeMVP[0][0]);
     glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(m_VAO);
     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
-void DemoCubeWindow::Destroy() {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteVertexArrays(1, &arrowVAO);
-    glDeleteBuffers(1, &arrowVBO);
-    glDeleteProgram(shaderProgram);
+void UI::DemoCubeWindow::Destroy() {
+    glDeleteVertexArrays(1, &m_VAO);
+    glDeleteBuffers(1, &m_VBO);
+    glDeleteBuffers(1, &m_EBO);
+    glDeleteVertexArrays(1, &m_arrowVAO);
+    glDeleteBuffers(1, &m_arrowVBO);
+    glDeleteProgram(m_shaderProgram);
 }
 
 void CheckShaderError(unsigned int shader, const std::string &type) {
@@ -145,7 +145,7 @@ void CheckShaderError(unsigned int shader, const std::string &type) {
     }
 }
 
-void DemoCubeWindow::CompileShaders() {
+void UI::DemoCubeWindow::CompileShaders() {
     const char *vertexShaderSource = R"(
         #version 300 es
         layout (location = 0) in vec3 aPos;
@@ -175,11 +175,11 @@ void DemoCubeWindow::CompileShaders() {
     glCompileShader(fragmentShader);
     CheckShaderError(fragmentShader, "FRAGMENT");
 
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    CheckShaderError(shaderProgram, "PROGRAM");
+    m_shaderProgram = glCreateProgram();
+    glAttachShader(m_shaderProgram, vertexShader);
+    glAttachShader(m_shaderProgram, fragmentShader);
+    glLinkProgram(m_shaderProgram);
+    CheckShaderError(m_shaderProgram, "PROGRAM");
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

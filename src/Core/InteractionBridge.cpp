@@ -3,7 +3,7 @@
 
 namespace Core {
     bool InteractionBridge::Update(std::shared_ptr<SharedState> state,
-                                   const std::vector<std::unique_ptr<SpatialWindow> > &windows) {
+                                   const std::vector<std::unique_ptr<UI::SpatialWindow> > &windows) {
         glm::vec3 headPos;
         glm::vec3 fingerTipPos;
         bool isPointerActive = false;

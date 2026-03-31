@@ -10,6 +10,6 @@ namespace Core {
     public:
         // Check if pointer is hovering over UI panel
         bool Update(std::shared_ptr<SharedState> state,
-                    const std::vector<std::unique_ptr<SpatialWindow> > &windows);
+                    const std::vector<std::unique_ptr<UI::SpatialWindow> > &windows);
     };
 }

@@ -5,33 +5,39 @@
 #include <memory>
 #include <glad/glad.h>
 
-class HandTrackingWindow : public SpatialWindow {
-public:
-    HandTrackingWindow(std::shared_ptr<Core::SharedState> state);
-    ~HandTrackingWindow() override;
+namespace UI {
+    class HandTrackingWindow : public SpatialWindow {
+    public:
+        HandTrackingWindow(std::shared_ptr<Core::SharedState> state);
 
-    void Init() override;
-    void Update(float deltaTime) override;
-    void Render(const glm::mat4& viewProjectionMatrix) override;
-    void Destroy() override;
+        ~HandTrackingWindow() override;
 
-private:
-    std::shared_ptr<Core::SharedState> m_state;
+        void Init() override;
 
-    bool m_isPinching = false;
+        void Update(float deltaTime) override;
 
-    // Vertices for 21 joints
-    std::vector<glm::vec3> m_pointVertices;
-    // Uniform for point thickness
-    GLuint m_pointSizeLoc = -1;
+        void Render(const glm::mat4 &viewProjectionMatrix) override;
 
-    GLuint m_VAO = 0;
-    GLuint m_VBO = 0;
+        void Destroy() override;
 
-    GLuint m_shaderProgram = 0;
-    GLint m_mvpLoc = -1;
-    GLint m_colorLoc = -1;
+    private:
+        std::shared_ptr<Core::SharedState> m_state;
 
-    // Vertices for 3D lines
-    std::vector<glm::vec3> m_lineVertices;
-};
+        bool m_isPinching = false;
+
+        // Vertices for 21 joints
+        std::vector<glm::vec3> m_pointVertices;
+        // Uniform for point thickness
+        GLuint m_pointSizeLoc = -1;
+
+        GLuint m_VAO = 0;
+        GLuint m_VBO = 0;
+
+        GLuint m_shaderProgram = 0;
+        GLint m_mvpLoc = -1;
+        GLint m_colorLoc = -1;
+
+        // Vertices for 3D lines
+        std::vector<glm::vec3> m_lineVertices;
+    };
+}
