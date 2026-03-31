@@ -7,7 +7,7 @@
 namespace Core {
     namespace ThreadUtils {
         void SetThreadName(const std::string &name) {
-            // Name must be < 16 chars
+            // Name limit 15 chars
             pthread_setname_np(pthread_self(), name.substr(0, 15).c_str());
         }
 

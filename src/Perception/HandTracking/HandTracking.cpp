@@ -10,7 +10,7 @@ namespace Perception {
         const float cam_fx = 470.326f;  const float cam_fy = 462.444f;
         const float cam_cx = 307.401f;  const float cam_cy = 232.849f;
 
-        // Pure optics. No artificial scale factors
+        // Pure optics
         float ray_x = (pixel.x - cam_cx) / cam_fx;
         float ray_y = (pixel.y - cam_cy) / cam_fy;
 
@@ -66,7 +66,6 @@ namespace Perception {
 
         SDL_Log("[HandTracking] Hand Tracker Thread Started on Core 2");
 
-        // Initialize
         if (Init()) {
             SDL_Log("[HandTracking] Initialized Hand Tracker");
         } else {
@@ -74,12 +73,9 @@ namespace Perception {
             return;
         }
 
-        // Pin to Core 2
         Core::ThreadUtils::PinThreadToCore(2);
 
-        // Main loop
         while (m_running) {
-            // Get frame
             std::shared_ptr<Core::CameraFrame> frame = nullptr;
             {
                 std::lock_guard<std::mutex> lock(m_state->cameraMutex);
@@ -90,12 +86,11 @@ namespace Perception {
 
             // Process new frame
             if (frame) {
-                // Start Timer
                 uint64_t startTime = SDL_GetTicks();
 
                 std::vector<PalmObject> data;
 
-                // Wrap frame in a cv::Mat
+                // Wrap frame in OpenCV matrix
                 cv::Mat cv_frame(
                     frame->height,
                     frame->width,
@@ -111,11 +106,10 @@ namespace Perception {
                 bool validWorldPointer = false;
                 bool currentlyPinching = false;
 
-                // Apply filter
                 if (!data.empty()) {
                     double timestamp_sec = SDL_GetTicksNS() / 1000000000.0;
 
-                    // Filter the first detected hand
+                    // Filter first detected hand
                     PalmObject& hand = data[0];
                     if (!hand.skeleton.empty()) {
                         for (size_t i = 0; i < 21; i++) {
@@ -124,28 +118,21 @@ namespace Perception {
                         }
                     }
 
-                    // Calculate local 3D position base (Flat plane at 20cm)
+                    // Calculate local 3D position at 20cm depth
                     constexpr float safeDepthMeters = 0.20f;
                     glm::vec3 wrist = MapCameraPixelToLocal3D(hand.skeleton[0], safeDepthMeters);
                     glm::vec3 indexTip = MapCameraPixelToLocal3D(hand.skeleton[8], safeDepthMeters);
                     glm::vec3 thumbTip = MapCameraPixelToLocal3D(hand.skeleton[4], safeDepthMeters);
 
-                    // ==========================================================
-                    // 1. PINCH DETECTION (Pixels only!)
-                    // ==========================================================
+                    // Pinch detection
                     glm::vec2 thumbPix(hand.skeleton[4].x, hand.skeleton[4].y);
                     glm::vec2 indexPix(hand.skeleton[8].x, hand.skeleton[8].y);
 
                     float pinchDistance = glm::distance(thumbPix, indexPix);
 
-                    // You will need to tune this threshold!
-                    // Watch the SDL_Log to see what value it rests at when pinched.
                     currentlyPinching = (pinchDistance < 40.0f);
-                    // SDL_Log("Pinch Distance: %f", pinchDistance);
 
-                    // ==========================================================
-                    // 2. 3D DEPTH HEURISTIC
-                    // ==========================================================
+                    // 3D depth heuristic
                     glm::vec2 wristXY(wrist.x, wrist.y);
                     glm::vec2 indexXY(indexTip.x, indexTip.y);
 
@@ -156,12 +143,10 @@ namespace Perception {
                     float zAngle = std::acos(ratio);
                     float zOffset = -std::sin(zAngle) * MAX_FLAT_LENGTH;
 
-                    // Push the actual index tip into the depth plane
+                    // Offset index tip depth
                     indexTip.z += zOffset;
 
-                    // ==========================================================
-                    // 3. WORLD TRANSFORM (No squeeze factor!)
-                    // ==========================================================
+                    // World transform
                     glm::quat headRotation;
                     {
                         std::lock_guard lock(m_state->imuMutex);
@@ -174,7 +159,7 @@ namespace Perception {
                         slamPos = m_state->slamPosition;
                     }
 
-                    // We map the TRUE anatomical points directly to the world!
+                    // Map anatomical points to world
                     calculatedWorldThumb = slamPos + (headRotation * thumbTip);
                     calculatedWorldPointer = slamPos + (headRotation * indexTip);
                     calculatedWorldWrist = slamPos + (headRotation * wrist);
@@ -185,7 +170,6 @@ namespace Perception {
 
                 uint64_t latency = (SDL_GetTicks() - startTime);
 
-                // Write to Shared State
                 {
                     std::lock_guard lock(m_state->handMutex);
                     m_state->objects = std::move(data);

@@ -75,11 +75,9 @@ namespace UI {
             }
         }
 
-        // ==========================================
         // RENDER THE LASER CURSOR
-        // ==========================================
         // We use ImGuiHoveredFlags_AllowWhenBlockedByActiveItem so the cursor
-        // still draws even if you are hovering over a button!
+        // Still draws even if you are hovering over a button!
         if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
             ImVec2 mousePos = ImGui::GetMousePos();
 

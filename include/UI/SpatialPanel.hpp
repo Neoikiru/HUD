@@ -33,11 +33,11 @@ namespace UI {
         std::shared_ptr<Rendering::SpatialUIManager> m_uiManager;
         std::string m_panelName;
 
-        // Ui sizing
+        // UI sizing
         ImVec2 m_atlasPos;
         ImVec2 m_panelSize;
 
-        // OpenGL Quad
+        // OpenGL quad
         unsigned int m_VAO = 0, m_VBO = 0, m_EBO = 0;
         unsigned int m_shaderProgram = 0;
         unsigned int m_mvpLoc = 0;

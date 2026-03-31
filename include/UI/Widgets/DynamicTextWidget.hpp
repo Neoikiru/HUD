@@ -7,13 +7,12 @@
 namespace UI {
     class DynamicTextWidget : public IWidget {
     public:
-        // Pass a lambda that returns a string!
+        // Callback for text data
         DynamicTextWidget(std::function<std::string()> dataFetcher)
             : m_fetcher(dataFetcher) {
         }
 
         void Draw() override {
-            // ImGui will draw whatever string the lambda returns this frame
             ImGui::Text("%s", m_fetcher().c_str());
         }
 

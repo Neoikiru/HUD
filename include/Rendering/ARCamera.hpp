@@ -22,7 +22,6 @@ namespace Rendering {
         };
         void ResetCalibration() { m_calibState = CalibrationState::NeedsCenter; }
 
-        // Getters
         const glm::mat4& GetProjectionMatrix() const { return m_projectionMatrix; }
         glm::quat GetProcessedRotation() const { return m_processedRotation; }
 
@@ -43,7 +42,7 @@ namespace Rendering {
 
         glm::quat m_processedRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
-        // --- Calibration Constants ---
+        // Calibration constants
         const float disp_fx = 683.0f;
         const float disp_fy = 642.0f;
         const float disp_cx = 112.0f;
@@ -55,14 +54,14 @@ namespace Rendering {
         const float nearClip = 0.01f;
         const float farClip = 100.0f;
 
-        // Camera to Eye offset
+        // Camera to eye offset
         const glm::vec3 eyeOffset = glm::vec3(-0.0554f, -0.0092f, 0.0580f);
 
         // Pitch offset
         const float imuMountPitchOffset = -45.0f;
         const float cameraPitchOffset = -10.0f;
 
-        // Zero
+        // Zeroing state
         bool m_isZeroed = false;
         glm::quat m_tareRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     };

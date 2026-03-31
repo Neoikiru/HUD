@@ -3,23 +3,23 @@
 
 #include "Utils/Logger.hpp"
 
-int main(int argc, char* argv[]) {
-    (void)argc; (void)argv;
+int main(int argc, char *argv[]) {
+    (void) argc;
+    (void) argv;
     try {
         Core::Logger::Init();
 
         Core::Engine app;
-        
+
         Core::EngineConfig config;
-        // Use explicit resolution for the small screen to be safe
-        config.window_width = 240; 
+        // Set explicit resolution
+        config.window_width = 240;
         config.window_height = 240;
-        config.fullscreen = true; // Try fullscreen
-        
+        config.fullscreen = true; // Enable fullscreen
+
         app.Initialize(config);
         app.Run();
-        
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         std::cerr << "[FATAL] Application crashed: " << e.what() << std::endl;
         return -1;
     }

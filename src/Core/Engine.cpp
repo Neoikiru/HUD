@@ -50,10 +50,8 @@ namespace Core {
             return;
         }
 
-        // Interaction Bridge
         m_interactionBridge = std::make_unique<InteractionBridge>();
 
-        // IMGUI
         m_uiManager = std::make_shared<Rendering::SpatialUIManager>();
         m_uiManager->Init(m_display.GetWindow(), m_display.GetContext());
 
@@ -66,7 +64,8 @@ namespace Core {
         m_handTracker->Start();
 
         m_arCamera.Init(m_state);
-        // Initialize a few test windows by hand
+
+        // Initialize test windows
         auto demoCube = std::make_unique<DemoCubeWindow>();
         demoCube->Init();
         demoCube->setVisible(true);
@@ -79,19 +78,16 @@ namespace Core {
         handTrackingWindow->setLockMode(LockMode::World);
         m_windows.push_back(std::move(handTrackingWindow));
 
-        // ==========================================================
-        // SPATIAL OS: MAIN DASHBOARD
-        // ==========================================================
-        // 1. Create a Panel requesting a 300x200 pixel slice of the Master Atlas
+        // Create panel with 300x200 atlas slice
         auto mainDashboard = std::make_unique<UI::SpatialPanel>(m_uiManager, "Main Dashboard", 300, 200);
 
-        // 2. Position it in the physical room!
-        // Push it 1.5 meters forward, and scale it down to a 45cm floating monitor
+        // Position in world space
+        // Position 1.5m forward and scale to 0.45
         mainDashboard->transform.position = glm::vec3(0.0f, 0.2f, -1.5f);
         mainDashboard->transform.scale = glm::vec3(0.45f, 0.45f, 1.0f);
         mainDashboard->setLockMode(LockMode::Body);
 
-        // 3. Attach a Dynamic Text Widget to show live telemetry
+        // Attach telemetry widget
         auto telemetryWidget = std::make_shared<UI::DynamicTextWidget>([this]() {
             double fps = 1.0 / m_state->frameTime.load();
 
@@ -107,29 +103,23 @@ namespace Core {
 
         mainDashboard->AddWidget(telemetryWidget);
 
-        // 4. Initialize the OpenGL Quad and add it to the Engine
         mainDashboard->Init();
         mainDashboard->setVisible(true);
         m_windows.push_back(std::move(mainDashboard));
 
-
-        // ==========================================================
-        // SMART HOME PANEL
-        // ==========================================================
-        // 1. Create a 240x120 panel for the light switch
+        // Create panel for light switch
         auto smartHomePanel = std::make_unique<UI::SpatialPanel>(m_uiManager, "Smart Home", 240, 120);
 
-        // 2. Put it physically on your desk (e.g., slightly down and to the right)
+        // Position in world space
         smartHomePanel->transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
         smartHomePanel->transform.scale = glm::vec3(0.3f, 0.15f, 1.0f);
         smartHomePanel->setLockMode(LockMode::World);
 
-        // 3. Add the Home Assistant Button Widget
+        // Add Home Assistant button
         auto lampButton = std::make_shared<UI::ButtonWidget>("Toggle Desk Lamp", []() {
             SDL_Log("Pinch Clicked! Sending Home Assistant Request...");
 
-            // Replace with your actual HA IP, Bearer Token, and Entity ID.
-            // The '&' at the end ensures the Engine doesn't stall waiting for the network!
+            // Run in background to avoid stalling
             std::string cmd =
                     "curl -s -X POST -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJlZGZiYTIwZTRjNzE0YTJlYjA5OTZhZjEzZjE3ZWZlNCIsImlhdCI6MTc3NDM3ODg1MywiZXhwIjoyMDg5NzM4ODUzfQ.31FASpq6T-XAGma7vfJQXjdeHu3rJqFhFYy6Fyh7N80\" "
                     "-H \"Content-Type: application/json\" "
@@ -154,7 +144,6 @@ namespace Core {
     void Engine::Run() {
         uint64_t lastTime = SDL_GetTicks();
 
-        // Performance Metrics
         uint64_t perfFreq = SDL_GetPerformanceFrequency();
 
         int frameCount = 0;
@@ -170,34 +159,32 @@ namespace Core {
             double dt = (currentTime - lastTime) / 1000.0;
             lastTime = currentTime;
 
-            // 1. Measure HandleInput
+            // Measure input handling
             uint64_t t0 = SDL_GetPerformanceCounter();
             HandleInput();
 
             m_interactionBridge->Update(m_state, m_windows);
             m_uiManager->BeginFrame();
-            // 2. Measure Update
+            // Measure update phase
             uint64_t t1 = SDL_GetPerformanceCounter();
             Update(dt);
 
-            // 3. Measure Render
+            // Measure render phase
             uint64_t t2 = SDL_GetPerformanceCounter();
             Render();
             uint64_t t3 = SDL_GetPerformanceCounter();
 
-            // Calculate milliseconds for each phase
             double inputMs = ((t1 - t0) * 1000.0) / perfFreq;
             double updateMs = ((t2 - t1) * 1000.0) / perfFreq;
             double renderMs = ((t3 - t2) * 1000.0) / perfFreq;
             double totalMs = ((t3 - frameStart) * 1000.0) / perfFreq;
 
-            // Accumulate
             accumInput += inputMs;
             accumUpdate += updateMs;
             accumRender += renderMs;
             accumTotal += totalMs;
 
-            // Print average every 60 frames
+            // Print averages periodically
             frameCount++;
             if (frameCount >= 240) {
                 // SDL_Log(
@@ -208,7 +195,6 @@ namespace Core {
                 //     accumTotal / 120.0,
                 //     1000.0 / (accumTotal / 120.0));
 
-                // Reset accumulators
                 frameCount = 0.0;
                 accumInput = 0.0;
                 accumUpdate = 0.0;

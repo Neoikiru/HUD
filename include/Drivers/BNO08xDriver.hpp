@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-// Include sh2 HAL definition
 #include "sh2_hal.h"
 
 namespace Drivers {
@@ -23,17 +22,17 @@ namespace Drivers {
 
         bool Init();
         IMUData Read();
-        void Process(); 
+        void Process();
 
-        // Internal use for C callback
+        // C callback event handler
         void OnSensorEvent(void* pEvent);
 
     private:
         std::string m_device;
         int m_fileDescriptor = -1;
         IMUData m_cachedData;
-        
-        sh2_Hal_t m_hal; // SH2 HAL Interface
+
+        sh2_Hal_t m_hal;
 
         int EnableReport(int reportId, uint32_t intervalUs);
     };

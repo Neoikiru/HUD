@@ -40,23 +40,21 @@ namespace Drivers {
         m_eventReleased = false;
         m_eventDoubleTap = false;
 
-        // Check for click timeout to reset counter
+        // Reset click counter on timeout
         if (m_clickCount > 0 && (now - m_lastClickTime > 300)) {
-            // Note: We don't reset to 0 immediately if we want to allow "IsDoubleTapped" to return true 
-            // exactly once. But usually, we reset the count on the NEXT press if too much time passed.
-            // Or we can reset here if the button is released.
+            // Wait for next press to reset count if timeout passed
             if (!m_isPressed) {
                 m_clickCount = 0; 
             }
         }
 
         if (currentPressed && !m_wasPressed) {
-            // Rising Edge (Press)
+            // Rising edge
             m_eventPressed = true;
             m_pressStartTime = now;
             m_longPressConsumed = false;
 
-            // Click Counting
+            // Count clicks
             if (now - m_lastClickTime < 300) {
                 m_clickCount++;
             } else {
@@ -68,7 +66,7 @@ namespace Drivers {
                 m_eventDoubleTap = true;
             }
         } else if (!currentPressed && m_wasPressed) {
-            // Falling Edge (Release)
+            // Falling edge
             m_eventReleased = true;
         }
 

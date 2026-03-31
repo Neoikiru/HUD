@@ -18,37 +18,32 @@ namespace Core {
         uint64_t timestamp_us;
     };
 
-    // This struct holds the "Latest" state of the world.
-    // Writers (Perception Thread) update it.
-    // Readers (Render Thread) read it to draw.
+    // Latest world state accessed by perception and render threads
     struct SharedState {
-        // --- Sensor Data (High Frequency) ---
+        // Sensor data
         std::atomic<float> linearAccelX{0.0f};
         std::atomic<float> linearAccelY{0.0f};
         std::atomic<float> linearAccelZ{0.0f};
 
-        // --- SLAM position ---
+        // SLAM position
         std::mutex slamMtx;
         glm::vec3 slamPosition{0.0f};
 
-        // --- Button State --
+        // Button state
         std::atomic<bool> isHeld{false};
         std::atomic<bool> isPressed{false};
         std::atomic<bool> isDoubleTapped{false};
 
-        // Quaternions are 4 floats; need mutex
         std::mutex imuMutex;
         glm::quat orientation{1,0,0,0}; // Raw IMU hardware
         glm::quat headRotation{1.0f, 0.0f, 0.0f, 0.0f}; // Processed IMU from ArCamera
         uint8_t imuAccuracy = 0;
 
-        // --- Camera Data ---
+        // Camera data
         std::mutex cameraMutex;
-        // We store pointers to frames to avoid copying
-        // A deque allows acting as a ring buffer (limit size)
         std::deque<std::shared_ptr<CameraFrame>> cameraQueue;
 
-        // --- Hand Tracking Data ---
+        // Hand tracking data
         std::mutex handMutex;
         std::vector<PalmObject> objects;
         std::atomic<uint64_t> inferenceLatency = 0;
@@ -60,7 +55,7 @@ namespace Core {
         glm::vec3 worldWrist{0.0f};
         bool isPointerActive = false;
 
-        // --- System State ---
+        // System state
         std::atomic<bool> isRunning{true};
         std::atomic<double> frameTime{0.0};
     };

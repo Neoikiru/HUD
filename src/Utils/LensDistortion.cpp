@@ -10,7 +10,7 @@ namespace Utils {
         cv::Mat cameraMatrix = (cv::Mat_<double>(3,3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
         cv::Mat distCoeffs = (cv::Mat_<double>(4,1) << k1, k2, p1, p2);
 
-        // Pre-compute the un-warping maps
+        // Precompute unwarping maps
         cv::initUndistortRectifyMap(
             cameraMatrix,
             distCoeffs,

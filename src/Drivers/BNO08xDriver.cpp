@@ -9,7 +9,6 @@
 #include <chrono>
 #include <SDL3/SDL_log.h>
 
-// Include sh2 headers
 #include "sh2.h"
 #include "sh2_hal.h"
 #include "sh2_err.h"
@@ -17,8 +16,7 @@
 #include "sh2_hal_linux.h" 
 
 namespace Drivers {
-
-    // Global callback trampoline since sh2 is C-based
+    // Callback trampoline for C-based sh2
     static BNO08xDriver* g_pDriver = nullptr;
 
     static void asyncCallback(void *cookie, sh2_AsyncEvent_t *pEvent) {
@@ -43,31 +41,31 @@ namespace Drivers {
     }
 
     bool BNO08xDriver::Init() {
-        // 0. Hardware reset
+        // Hardware reset
         SDL_Log("[BNO08x Driver] Performing Physical Hardware Reset on GPIO 26...");
 
-        // Force the pin to be an Output and drive it LOW to kill the sensor
+        // Set pin as output and drive low
         int ret = system("pinctrl set 26 op pn dl");
         if (ret != 0) {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] pinctrl command failed.");
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Clear buffers
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for buffers to clear
 
-        // Drive HIGH to boot the sensor
+        // Drive high to boot sensor
         system("pinctrl set 26 op pn dh");
 
-        // The BNO08x takes ~600ms to boot up
+        // Wait for boot
         std::this_thread::sleep_for(std::chrono::milliseconds(600));
         SDL_Log("[BNO08x Driver] BNO08x Hardware Booted.");
 
-        // 1. Open I2C
+        // Open I2C bus
         m_fileDescriptor = open(m_device.c_str(), O_RDWR);
         if (m_fileDescriptor < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] Failed to open I2C bus");
             return false;
         }
 
-        // 2. Probe Address (0x4A vs 0x4B)
+        // Probe I2C address
         int address = 0x4B;
         if (ioctl(m_fileDescriptor, I2C_SLAVE, address) < 0) {
             address = 0x4A;
@@ -76,51 +74,20 @@ namespace Drivers {
 
         SDL_Log("[BNO08x Driver] Using BNO08x Address: 0x%02X", address);
 
-        // Initialize HAL first so we can use its Read/Write functions
         sh2_hal_set_fd(m_fileDescriptor, address);
         sh2_hal_linux_init(&m_hal);
 
-        // --- FLUSH ---
-        // Drain any pending data from previous run/boot
-        // SDL_Log("Flushing I2C...");
-        // uint8_t dummy[512];
-        // for (int i=0; i<50; ++i) {
-        //     if (m_hal.read(NULL, dummy, sizeof(dummy), NULL) == 0) {
-        //         break;
-        //     }
-        //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        // }
-
-        // --- MANUAL SOFT RESET ---
-        // Send SHTP Executable (Ch 1) Command 1 (Reset)
-        // Header: Len=5 (4+1), Ch=1, Seq=0
-        // Data: 1
-        // SDL_Log("Forcing Soft Reset...");
-        // uint8_t resetPkt[] = {
-        //     0x05, 0x00, // Length 5
-        //     0x01,       // Channel 1 (Executable)
-        //     0x00,       // Seq 0
-        //     0x01        // Command 1 (Reset)
-        // };
-        // write(m_fileDescriptor, resetPkt, sizeof(resetPkt));
-        
-        // Wait for reset to complete and advertisement to appear
-        // std::this_thread::sleep_for(std::chrono::milliseconds(300));
-        // -------------------------
-
-        // 3. Open SH2
+        // Open SH2
         int status = sh2_open(&m_hal, asyncCallback, NULL);
         if (status != SH2_OK) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[BNO08x Driver] sh2_open failed: %d", status);
-            // Don't return false yet, maybe it works anyway?
-            // Actually, if open fails, we probably can't configure.
             return false;
         }
 
-        // 4. Register Sensor Callback
+        // Register sensor callback
         sh2_setSensorCallback(sensorHandler, NULL);
 
-        // 5. Verify Product ID
+        // Verify product ID
         sh2_ProductIds_t prodIds;
         status = sh2_getProdIds(&prodIds);
         if (status == SH2_OK && prodIds.numEntries > 0) {
@@ -131,9 +98,9 @@ namespace Drivers {
             SDL_LogError(SDL_LOG_CATEGORY_INPUT, "[BNO08x Driver] Failed to read Product IDs: %d", status);
         }
 
-        // 6. Enable Reports
+        // Enable reports
         SDL_Log("[BNO08x Driver] Enabling Game Rotation Vector...");
-        EnableReport(SH2_GAME_ROTATION_VECTOR, 10000); // 10ms
+        EnableReport(SH2_GAME_ROTATION_VECTOR, 10000); // 10ms interval
 
         bool engineStarted = false;
         for (int attempt = 1; attempt <= 5; ++attempt) {
@@ -151,7 +118,6 @@ namespace Drivers {
 
         if (!engineStarted) {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "[BNO08x Driver] FATAL: BNO08x refused to initialize.");
-            // Fatal Error
         }
 
         SDL_Log("[BNO08x Driver] Enabling Linear Acceleration...");

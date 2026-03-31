@@ -8,7 +8,7 @@
 namespace Core {
     class InteractionBridge {
     public:
-        // Returns true if the pointer is currently hovering over a UI panel
+        // Check if pointer is hovering over UI panel
         bool Update(std::shared_ptr<SharedState> state,
                     const std::vector<std::unique_ptr<SpatialWindow> > &windows);
     };

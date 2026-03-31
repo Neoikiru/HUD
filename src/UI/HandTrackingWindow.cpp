@@ -108,16 +108,16 @@ void HandTrackingWindow::Update(float deltaTime) {
         indexPos = m_state->worldPointer;
         wristPos = m_state->worldWrist;
         thumbPos = m_state->worldThumb;
-        m_isPinching = m_state->isPinching.load(); // Save state for Render()
+        m_isPinching = m_state->isPinching.load();
     }
 
     if (hasHand) {
-        // Draw the 3 tracking nodes
+        // Draw tracking nodes
         m_pointVertices.push_back(wristPos);
         m_pointVertices.push_back(indexPos);
         m_pointVertices.push_back(thumbPos);
 
-        // Draw a visual "tension wire" between Thumb and Index
+        // Draw tension wire
         m_lineVertices.push_back(thumbPos);
         m_lineVertices.push_back(indexPos);
     }
@@ -132,38 +132,34 @@ void HandTrackingWindow::Render(const glm::mat4 &viewProjectionMatrix) {
     glUseProgram(m_shaderProgram);
     glUniformMatrix4fv(m_mvpLoc, 1, GL_FALSE, &mvp[0][0]);
 
-    // --- DYNAMIC COLOR LOGIC ---
     if (m_isPinching) {
-        // GREEN when pinching (Click active!)
         glUniform4f(m_colorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
     } else {
-        // CYAN when open (Hovering)
         glUniform4f(m_colorLoc, 0.0f, 1.0f, 1.0f, 1.0f);
     }
 
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-    // Disable depth testing so your tracking dots always draw OVER the physical world
+    // Disable depth testing to draw over world
     glDisable(GL_DEPTH_TEST);
 
-    // --- DRAW THE TENSION WIRE ---
     if (!m_lineVertices.empty()) {
         glBufferData(GL_ARRAY_BUFFER, m_lineVertices.size() * sizeof(glm::vec3), m_lineVertices.data(),
                      GL_DYNAMIC_DRAW);
         glDrawArrays(GL_LINES, 0, m_lineVertices.size());
     }
 
-    // --- DRAW THE TRACKING DOTS ---
     if (!m_pointVertices.empty()) {
-        glUniform1f(m_pointSizeLoc, 12.0f); // Slightly smaller, cleaner dots
+        glUniform1f(m_pointSizeLoc, 12.0f);
         glBufferData(GL_ARRAY_BUFFER, m_pointVertices.size() * sizeof(glm::vec3), m_pointVertices.data(),
                      GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINTS, 0, m_pointVertices.size());
     }
 
     glBindVertexArray(0);
-    glEnable(GL_DEPTH_TEST); // Turn it back on for the rest of the engine!
+    // Re-enable depth testing
+    glEnable(GL_DEPTH_TEST);
 }
 
 void HandTrackingWindow::Destroy() {
@@ -175,5 +171,4 @@ void HandTrackingWindow::Destroy() {
         glDeleteBuffers(1, &m_VBO);
         m_VBO = 0;
     }
-    // if (m_shaderProgram) { glDeleteProgram(m_shaderProgram); m_shaderProgram = 0; }
 }

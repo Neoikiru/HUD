@@ -84,7 +84,7 @@ namespace Drivers {
             SDL_Log("[CameraDriver] Mapped FD %d, Len %zu", fd, length);
         }
 
-        // 3. Create Requests
+        // Create requests
 
         for (const auto &buffer : buffers) {
             std::unique_ptr<libcamera::Request> request = m_camera->createRequest();
@@ -138,8 +138,6 @@ namespace Drivers {
     }
 
     void CameraDriver::RequestCompleted(libcamera::Request *request) {
-        // SDL_Log("Frame Captured!"); // Debug log
-
         if (request->status() == libcamera::Request::RequestCancelled) return;
 
         const libcamera::FrameBuffer *buffer = request->buffers().begin()->second;

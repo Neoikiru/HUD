@@ -26,7 +26,6 @@ namespace Perception {
         if (!m_running) return;
         m_running = false;
         
-        // Stop Camera explicitly if running
         if (m_camera) m_camera->Stop();
 
         if (m_thread.joinable()) {
@@ -35,13 +34,11 @@ namespace Perception {
     }
 
     void PerceptionService::WorkerLoop() {
-        // 1. Pin to Core 1
         Core::ThreadUtils::SetThreadName("Perception");
         Core::ThreadUtils::PinThreadToCore(1);
 
         SDL_Log("[PerceptionService] Perception Thread Started on Core 1");
 
-        // 2. Initialize Hardware
         if (!m_imu->Init()) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[PerceptionService] IMU Init Failed in Perception Thread");
         }
@@ -53,14 +50,11 @@ namespace Perception {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[PerceptionService] Camera Init Failed");
         }
 
-        // 3. Loop
         while (m_running) {
-            // Read Sensor (Blocking/Polling logic inside driver)
             m_imu->Process(); 
             
             Drivers::IMUData data = m_imu->Read();
 
-            // Update Blackboard
             {
                 std::lock_guard<std::mutex> lock(m_state->imuMutex);
                 m_state->orientation = data.rotation;
@@ -71,7 +65,6 @@ namespace Perception {
             m_state->linearAccelY.store(data.linearAccel.y);
             m_state->linearAccelZ.store(data.linearAccel.z);
 
-            // Yield
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         

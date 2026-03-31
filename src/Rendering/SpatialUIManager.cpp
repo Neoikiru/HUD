@@ -64,7 +64,7 @@ namespace Rendering {
     }
 
     ImVec2 SpatialUIManager::AllocateAtlasSpace(int width, int height) {
-        // Move to the next line if no space left on current line
+        // Move to next line if space is insufficient
         if (m_currentX + width > m_atlasSize) {
             m_currentX = 0;
             m_currentY += m_rowHeight;

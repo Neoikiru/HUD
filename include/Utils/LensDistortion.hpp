@@ -5,21 +5,19 @@
 #include "Core/SharedState.hpp"
 
 namespace Utils {
-
     class LensDistortion {
     public:
         LensDistortion() = default;
+
         ~LensDistortion() = default;
 
-        // Initialize the lookup maps
         void Init(int width, int height);
 
-        // Modifies raw CameraFrame buffer in-place
+        // Undistort frame in-place
         void UndistortFrame(std::shared_ptr<Core::CameraFrame> frame);
 
     private:
         cv::Mat m_map1;
         cv::Mat m_map2;
     };
-
 }

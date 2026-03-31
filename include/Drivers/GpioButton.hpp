@@ -33,7 +33,7 @@ namespace Drivers {
         bool m_eventDoubleTap = false;
 
         uint64_t m_pressStartTime = 0;
-        uint64_t m_lastClickTime = 0; // Time of the previous press (for multi-click)
+        uint64_t m_lastClickTime = 0;
         bool m_longPressConsumed = false;
         
         int m_clickCount = 0;

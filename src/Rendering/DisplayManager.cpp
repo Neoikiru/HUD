@@ -19,24 +19,16 @@ namespace Rendering {
         // Request depth buffer
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-        // SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-        // SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-        // SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-        // SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-        // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-        // prepare flags for SDL
+        // Prepare SDL flags
         Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
         if (config.fullscreen) flags |= SDL_WINDOW_FULLSCREEN;
 
-        // Create window
         m_window = SDL_CreateWindow(config.title.c_str(), config.width, config.height ,flags);
         if (!m_window) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "[Display Manager] Window creation failed: %s", SDL_GetError());
             return false;
         }
 
-        // Create OpenGL context
         m_glContext = SDL_GL_CreateContext(m_window);
         if (!m_glContext) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "[Display Manager] OpenGL Context creation failed: %s",
@@ -55,7 +47,6 @@ namespace Rendering {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
-        // VSync off
         SDL_GL_SetSwapInterval(0);
 
         SDL_Log("[Display Manager] OpenGL Display Initialized: %dx%d", config.width, config.height);

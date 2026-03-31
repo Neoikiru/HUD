@@ -38,8 +38,8 @@ namespace Core {
         Rendering::DisplayManager m_display;
         std::unique_ptr<Perception::PerceptionService> m_perception;
         std::unique_ptr<Perception::HandTracker> m_handTracker;
-        
-        // Input (on Main Thread)
+
+        // Input (Main thread)
         std::unique_ptr<Drivers::GpioButton> m_actionButton;
         
         SDL_Texture* m_cameraTexture = nullptr;

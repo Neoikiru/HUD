@@ -20,18 +20,18 @@ private:
 
     bool m_isPinching = false;
 
-    std::vector<glm::vec3> m_pointVertices; // New array for the 21 joints
-    GLuint m_pointSizeLoc = -1;             // New uniform for thickness
+    // Vertices for 21 joints
+    std::vector<glm::vec3> m_pointVertices;
+    // Uniform for point thickness
+    GLuint m_pointSizeLoc = -1;
 
-    // OpenGL Buffers
     GLuint m_VAO = 0;
     GLuint m_VBO = 0;
 
-    // Shader locations (assuming you use the same basic color shader as DemoCube)
     GLuint m_shaderProgram = 0;
     GLint m_mvpLoc = -1;
     GLint m_colorLoc = -1;
 
-    // The dynamic array of 3D lines we will draw every frame
+    // Vertices for 3D lines
     std::vector<glm::vec3> m_lineVertices;
 };

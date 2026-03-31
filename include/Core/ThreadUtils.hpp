@@ -4,11 +4,10 @@
 
 namespace Core {
 namespace ThreadUtils {
-
-    // Set the name of the current thread (for top/htop debugging)
+    // Set current thread name
     void SetThreadName(const std::string& name);
 
-    // Pin the current thread to a specific CPU core index (0-3 on Pi 5)
+    // Pin current thread to core index (0-3 on Pi 5)
     void PinThreadToCore(int coreId);
 
 }

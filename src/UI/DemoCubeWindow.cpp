@@ -10,13 +10,13 @@ void DemoCubeWindow::Init() {
 
     CompileShaders();
 
-    // SETUP THE 3D CUBE
+    // Setup 3D cube
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f
+        -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f,
+        -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f
     };
     unsigned int indices[] = {
-        0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7
+        0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
     };
 
     glGenVertexArrays(1, &VAO);
@@ -28,17 +28,17 @@ void DemoCubeWindow::Init() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
-    // SETUP THE 2D NAVIGATION ARROW
-    // A simple line-art arrow pointing to the RIGHT (+X)
+    // Setup 2D navigation arrow
+    // Arrow pointing right
     float arrowVerts[] = {
-        0.15f,  0.0f,  0.0f,   // The Tip
-       -0.10f,  0.10f, 0.0f,   // Top Tail
-       -0.05f,  0.0f,  0.0f,   // Inner Cleft
-       -0.10f, -0.10f, 0.0f    // Bottom Tail
-   };
+        0.15f, 0.0f, 0.0f,
+        -0.10f, 0.10f, 0.0f,
+        -0.05f, 0.0f, 0.0f,
+        -0.10f, -0.10f, 0.0f
+    };
 
     glGenVertexArrays(1, &arrowVAO);
     glGenBuffers(1, &arrowVBO);
@@ -46,40 +46,38 @@ void DemoCubeWindow::Init() {
     glBindVertexArray(arrowVAO);
     glBindBuffer(GL_ARRAY_BUFFER, arrowVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(arrowVerts), arrowVerts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
 
+    float headsetVerts[] = {
+        -0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.1f,
+        0.2f, -0.1f, 0.1f, 0.2f, 0.1f, 0.1f,
+        0.2f, 0.1f, 0.1f, -0.2f, 0.1f, 0.1f,
+        -0.2f, 0.1f, 0.1f, -0.2f, -0.1f, 0.1f,
+        -0.2f, -0.1f, 0.3f, 0.2f, -0.1f, 0.3f,
+        0.2f, -0.1f, 0.3f, 0.2f, 0.1f, 0.3f,
+        0.2f, 0.1f, 0.3f, -0.2f, 0.1f, 0.3f,
+        -0.2f, 0.1f, 0.3f, -0.2f, -0.1f, 0.3f,
+        -0.2f, -0.1f, 0.1f, -0.2f, -0.1f, 0.3f,
+        0.2f, -0.1f, 0.1f, 0.2f, -0.1f, 0.3f,
+        0.2f, 0.1f, 0.1f, 0.2f, 0.1f, 0.3f,
+        -0.2f, 0.1f, 0.1f, -0.2f, 0.1f, 0.3f,
 
-   float headsetVerts[] = {
-        // MAIN BOX (Wireframe)
-        -0.2f, -0.1f,  0.1f,   0.2f, -0.1f,  0.1f, // Bottom Front edge
-         0.2f, -0.1f,  0.1f,   0.2f,  0.1f,  0.1f, // Right Front edge
-         0.2f,  0.1f,  0.1f,  -0.2f,  0.1f,  0.1f, // Top Front edge
-        -0.2f,  0.1f,  0.1f,  -0.2f, -0.1f,  0.1f, // Left Front edge
-        -0.2f, -0.1f,  0.3f,   0.2f, -0.1f,  0.3f, // Bottom Back edge
-         0.2f, -0.1f,  0.3f,   0.2f,  0.1f,  0.3f, // Right Back edge
-         0.2f,  0.1f,  0.3f,  -0.2f,  0.1f,  0.3f, // Top Back edge
-        -0.2f,  0.1f,  0.3f,  -0.2f, -0.1f,  0.3f, // Left Back edge
-        -0.2f, -0.1f,  0.1f,  -0.2f, -0.1f,  0.3f, // Connect Front-Back (BL)
-         0.2f, -0.1f,  0.1f,   0.2f, -0.1f,  0.3f, // Connect Front-Back (BR)
-         0.2f,  0.1f,  0.1f,   0.2f,  0.1f,  0.3f, // Connect Front-Back (TR)
-        -0.2f,  0.1f,  0.1f,  -0.2f,  0.1f,  0.3f, // Connect Front-Back (TL)
+        // Camera lens
+        -0.05f, -0.05f, 0.1f, -0.05f, -0.05f, -0.1f,
+        0.05f, -0.05f, 0.1f, 0.05f, -0.05f, -0.1f,
+        0.05f, 0.05f, 0.1f, 0.05f, 0.05f, -0.1f,
+        -0.05f, 0.05f, 0.1f, -0.05f, 0.05f, -0.1f,
+        -0.05f, -0.05f, -0.1f, 0.05f, -0.05f, -0.1f,
+        0.05f, -0.05f, -0.1f, 0.05f, 0.05f, -0.1f,
+        0.05f, 0.05f, -0.1f, -0.05f, 0.05f, -0.1f,
+        -0.05f, 0.05f, -0.1f, -0.05f, -0.05f, -0.1f,
 
-        // "THE CAMERA LENS" (Protruding forward out of the -Z face)
-        -0.05f, -0.05f, 0.1f,  -0.05f, -0.05f, -0.1f, // Bottom Left Tube
-         0.05f, -0.05f, 0.1f,   0.05f, -0.05f, -0.1f, // Bottom Right Tube
-         0.05f,  0.05f, 0.1f,   0.05f,  0.05f, -0.1f, // Top Right Tube
-        -0.05f,  0.05f, 0.1f,  -0.05f,  0.05f, -0.1f, // Top Left Tube
-        -0.05f, -0.05f,-0.1f,   0.05f, -0.05f, -0.1f, // Lens Tip Bottom
-         0.05f, -0.05f,-0.1f,   0.05f,  0.05f, -0.1f, // Lens Tip Right
-         0.05f,  0.05f,-0.1f,  -0.05f,  0.05f, -0.1f, // Lens Tip Top
-        -0.05f,  0.05f,-0.1f,  -0.05f, -0.05f, -0.1f, // Lens Tip Left
-
-        // AXES (Emanating from the center)
-         0.0f,  0.0f,  0.0f,   0.4f,  0.0f,  0.0f, // X-Axis (Red)
-         0.0f,  0.0f,  0.0f,   0.0f,  0.4f,  0.0f, // Y-Axis (Green)
-         0.0f,  0.0f,  0.0f,   0.0f,  0.0f,  0.4f  // Z-Axis (Blue)
+        // Axes
+        0.0f, 0.0f, 0.0f, 0.4f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 0.4f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f
     };
 
     glGenVertexArrays(1, &axisVAO);
@@ -87,7 +85,7 @@ void DemoCubeWindow::Init() {
     glBindVertexArray(axisVAO);
     glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(headsetVerts), headsetVerts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -99,22 +97,19 @@ void DemoCubeWindow::Update(float deltaTime) {
     transform.rotation = spin * transform.rotation;
 }
 
-void DemoCubeWindow::Render(const glm::mat4& viewProjectionMatrix) {
+void DemoCubeWindow::Render(const glm::mat4 &viewProjectionMatrix) {
     if (!m_isVisible) return;
 
     glUseProgram(shaderProgram);
     unsigned int mvpLoc = glGetUniformLocation(shaderProgram, "u_MVP");
     unsigned int colorLoc = glGetUniformLocation(shaderProgram, "u_Color");
 
-    // 1. Calculate this specific Cube's position and rotation
     glm::mat4 modelMatrix = transform.GetModelMatrix();
 
-    // 2. Multiply it by whichever "Universe" the Engine passed to us!
     glm::mat4 cubeMVP = viewProjectionMatrix * modelMatrix;
 
-    // 3. Upload and Draw
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &cubeMVP[0][0]);
-    glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f); // Green Cube
+    glUniform4f(colorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
@@ -130,7 +125,7 @@ void DemoCubeWindow::Destroy() {
     glDeleteProgram(shaderProgram);
 }
 
-void CheckShaderError(unsigned int shader, const std::string& type) {
+void CheckShaderError(unsigned int shader, const std::string &type) {
     int success;
     char infoLog[1024];
     if (type != "PROGRAM") {
@@ -144,13 +139,14 @@ void CheckShaderError(unsigned int shader, const std::string& type) {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "[DemoCube] ERROR::PROGRAM_LINKING_ERROR of type: %s\n%s", type.c_str(), infoLog);
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "[DemoCube] ERROR::PROGRAM_LINKING_ERROR of type: %s\n%s",
+                         type.c_str(), infoLog);
         }
     }
 }
 
 void DemoCubeWindow::CompileShaders() {
-    const char* vertexShaderSource = R"(
+    const char *vertexShaderSource = R"(
         #version 300 es
         layout (location = 0) in vec3 aPos;
         uniform mat4 u_MVP;
@@ -159,7 +155,7 @@ void DemoCubeWindow::CompileShaders() {
         }
     )";
 
-    const char* fragmentShaderSource = R"(
+    const char *fragmentShaderSource = R"(
         #version 300 es
         precision mediump float;
         uniform vec4 u_Color;
@@ -172,18 +168,18 @@ void DemoCubeWindow::CompileShaders() {
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-    CheckShaderError(vertexShader, "VERTEX"); // <--- DEBUG CHECK
+    CheckShaderError(vertexShader, "VERTEX");
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-    CheckShaderError(fragmentShader, "FRAGMENT"); // <--- DEBUG CHECK
+    CheckShaderError(fragmentShader, "FRAGMENT");
 
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-    CheckShaderError(shaderProgram, "PROGRAM"); // <--- DEBUG CHECK
+    CheckShaderError(shaderProgram, "PROGRAM");
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
