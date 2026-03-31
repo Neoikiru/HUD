@@ -1,0 +1,14 @@
+name: C++ Linter
+on: [ push, pull_request ]
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check C++ formatting
+        uses: DoozyX/clang-format-lint-action@v0.15
+        with:
+          source: '.'
+          extensions: 'hpp,cpp'
+          clangFormatVersion: 14
+          style: 'Google'
