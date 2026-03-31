@@ -133,6 +133,7 @@ add_executable(hud
 
     src/Core/Engine.cpp
     src/Core/ThreadUtils.cpp
+        src/Core/InteractionBridge.cpp
 
     src/Rendering/DisplayManager.cpp
     src/Rendering/ARCamera.cpp
@@ -154,7 +155,7 @@ add_executable(hud
 
     src/UI/DemoCubeWindow.cpp
     src/UI/HandTrackingWindow.cpp
-    src/UI/DebugHUDWindow.cpp
+        src/UI/SpatialPanel.cpp
 
     ${SH2_SOURCES}
 )

@@ -3,8 +3,9 @@
 
 #include "UI/DemoCubeWindow.hpp"
 #include "UI/HandTrackingWindow.hpp"
-#include "UI/DebugHUDWindow.hpp"
-
+#include "UI/SpatialPanel.hpp"
+#include "UI/Widgets/DynamicTextWidget.hpp"
+#include "UI/Widgets/ButtonWidget.hpp"
 
 #include <SDL3/SDL.h>
 #include <sstream>
@@ -49,8 +50,11 @@ namespace Core {
             return;
         }
 
+        // Interaction Bridge
+        m_interactionBridge = std::make_unique<InteractionBridge>();
+
         // IMGUI
-        m_uiManager = std::make_unique<Rendering::SpatialUIManager>();
+        m_uiManager = std::make_shared<Rendering::SpatialUIManager>();
         m_uiManager->Init(m_display.GetWindow(), m_display.GetContext());
 
         m_actionButton = std::make_unique<Drivers::GpioButton>(17);
@@ -75,12 +79,71 @@ namespace Core {
         handTrackingWindow->setLockMode(LockMode::World);
         m_windows.push_back(std::move(handTrackingWindow));
 
-        // auto debugHud = std::make_unique<DebugHUDWindow>(m_state);
-        // debugHud->Init();
-        // debugHud->setVisible(true);
-        // debugHud->setLockMode(LockMode::World);
-        // m_windows.push_back(std::move(debugHud));
+        // ==========================================================
+        // SPATIAL OS: MAIN DASHBOARD
+        // ==========================================================
+        // 1. Create a Panel requesting a 300x200 pixel slice of the Master Atlas
+        auto mainDashboard = std::make_unique<UI::SpatialPanel>(m_uiManager, "Main Dashboard", 300, 200);
 
+        // 2. Position it in the physical room!
+        // Push it 1.5 meters forward, and scale it down to a 45cm floating monitor
+        mainDashboard->transform.position = glm::vec3(0.0f, 0.2f, -1.5f);
+        mainDashboard->transform.scale = glm::vec3(0.45f, 0.45f, 1.0f);
+        mainDashboard->setLockMode(LockMode::Body);
+
+        // 3. Attach a Dynamic Text Widget to show live telemetry
+        auto telemetryWidget = std::make_shared<UI::DynamicTextWidget>([this]() {
+            double fps = 1.0 / m_state->frameTime.load();
+
+            std::string text = "SPATIAL OS v0.1\n";
+            text += "-------------------\n";
+            text += "FPS: " + std::to_string((int) fps) + "\n";
+
+            bool tracking = m_state->isPointerActive;
+            text += "Hand Tracking: " + std::string(tracking ? "ACTIVE" : "LOST") + "\n";
+
+            return text;
+        });
+
+        mainDashboard->AddWidget(telemetryWidget);
+
+        // 4. Initialize the OpenGL Quad and add it to the Engine
+        mainDashboard->Init();
+        mainDashboard->setVisible(true);
+        m_windows.push_back(std::move(mainDashboard));
+
+
+        // ==========================================================
+        // SMART HOME PANEL
+        // ==========================================================
+        // 1. Create a 240x120 panel for the light switch
+        auto smartHomePanel = std::make_unique<UI::SpatialPanel>(m_uiManager, "Smart Home", 240, 120);
+
+        // 2. Put it physically on your desk (e.g., slightly down and to the right)
+        smartHomePanel->transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
+        smartHomePanel->transform.scale = glm::vec3(0.3f, 0.15f, 1.0f);
+        smartHomePanel->setLockMode(LockMode::World);
+
+        // 3. Add the Home Assistant Button Widget
+        auto lampButton = std::make_shared<UI::ButtonWidget>("Toggle Desk Lamp", []() {
+            SDL_Log("Pinch Clicked! Sending Home Assistant Request...");
+
+            // Replace with your actual HA IP, Bearer Token, and Entity ID.
+            // The '&' at the end ensures the Engine doesn't stall waiting for the network!
+            std::string cmd =
+                    "curl -s -X POST -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJlZGZiYTIwZTRjNzE0YTJlYjA5OTZhZjEzZjE3ZWZlNCIsImlhdCI6MTc3NDM3ODg1MywiZXhwIjoyMDg5NzM4ODUzfQ.31FASpq6T-XAGma7vfJQXjdeHu3rJqFhFYy6Fyh7N80\" "
+                    "-H \"Content-Type: application/json\" "
+                    "-d '{\"entity_id\": \"switch.desk_lamp\"}' "
+                    "http://192.168.12.100:8123/api/services/switch/toggle > /dev/null 2>&1 &";
+
+            system(cmd.c_str());
+        });
+
+        smartHomePanel->AddWidget(lampButton);
+
+        smartHomePanel->Init();
+        smartHomePanel->setVisible(true);
+        m_windows.push_back(std::move(smartHomePanel));
 
         ThreadUtils::PinThreadToCore(0);
 
@@ -111,6 +174,7 @@ namespace Core {
             uint64_t t0 = SDL_GetPerformanceCounter();
             HandleInput();
 
+            m_interactionBridge->Update(m_state, m_windows);
             m_uiManager->BeginFrame();
             // 2. Measure Update
             uint64_t t1 = SDL_GetPerformanceCounter();
@@ -175,9 +239,6 @@ namespace Core {
 
         m_arCamera.Update();
 
-        ImGui::Begin("Atlas Test Window");
-        ImGui::Text("If this doesn't crash, Phase 1 is complete!");
-        ImGui::End();
 
         for (auto &window: m_windows) {
             window->Update(static_cast<float>(dt));

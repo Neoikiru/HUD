@@ -107,7 +107,9 @@ namespace Perception {
 
                 glm::vec3 calculatedWorldPointer(0.0f);
                 glm::vec3 calculatedWorldWrist(0.0f);
+                glm::vec3 calculatedWorldThumb(0.0f);
                 bool validWorldPointer = false;
+                bool currentlyPinching = false;
 
                 // Apply filter
                 if (!data.empty()) {
@@ -122,40 +124,44 @@ namespace Perception {
                         }
                     }
 
-                    // Calculate local 3D position base (Flat plane at 30cm)
+                    // Calculate local 3D position base (Flat plane at 20cm)
                     constexpr float safeDepthMeters = 0.20f;
                     glm::vec3 wrist = MapCameraPixelToLocal3D(hand.skeleton[0], safeDepthMeters);
                     glm::vec3 indexTip = MapCameraPixelToLocal3D(hand.skeleton[8], safeDepthMeters);
+                    glm::vec3 thumbTip = MapCameraPixelToLocal3D(hand.skeleton[4], safeDepthMeters);
 
+                    // ==========================================================
+                    // 1. PINCH DETECTION (Pixels only!)
+                    // ==========================================================
+                    glm::vec2 thumbPix(hand.skeleton[4].x, hand.skeleton[4].y);
+                    glm::vec2 indexPix(hand.skeleton[8].x, hand.skeleton[8].y);
 
-                    // 2D to 3D  heuristics
+                    float pinchDistance = glm::distance(thumbPix, indexPix);
+
+                    // You will need to tune this threshold!
+                    // Watch the SDL_Log to see what value it rests at when pinched.
+                    currentlyPinching = (pinchDistance < 40.0f);
+                    // SDL_Log("Pinch Distance: %f", pinchDistance);
+
+                    // ==========================================================
+                    // 2. 3D DEPTH HEURISTIC
+                    // ==========================================================
                     glm::vec2 wristXY(wrist.x, wrist.y);
                     glm::vec2 indexXY(indexTip.x, indexTip.y);
 
-                    // Measure the distance in meters on the flat X/Y plane
                     float currentLengthMeters = glm::distance(wristXY, indexXY);
-
-                    // Anatomical Constant ~18cm from wrist to index tip
                     const float MAX_FLAT_LENGTH = 0.18f;
 
-                    // Calculate ratio (prevent NaN crashes if the AI hallucinates a long hand)
-                    float ratio = currentLengthMeters / MAX_FLAT_LENGTH;
-                    ratio = glm::clamp(ratio, 0.0f, 1.0f);
-
-                    // Calculate the missing Z-angle
+                    float ratio = glm::clamp(currentLengthMeters / MAX_FLAT_LENGTH, 0.0f, 1.0f);
                     float zAngle = std::acos(ratio);
-
-                    // Calculate the missing Z-depth
                     float zOffset = -std::sin(zAngle) * MAX_FLAT_LENGTH;
 
-                    // Push the index tip into the depth plane
+                    // Push the actual index tip into the depth plane
                     indexTip.z += zOffset;
 
-                    // Apply the squeeze factor
-                    constexpr float squeezeFactor = 0.8f;
-                    glm::vec3 localPointer = wrist + (indexTip - wrist) * squeezeFactor;
-
-                    // Move pointer from the Local to World position
+                    // ==========================================================
+                    // 3. WORLD TRANSFORM (No squeeze factor!)
+                    // ==========================================================
                     glm::quat headRotation;
                     {
                         std::lock_guard lock(m_state->imuMutex);
@@ -168,7 +174,9 @@ namespace Perception {
                         slamPos = m_state->slamPosition;
                     }
 
-                    calculatedWorldPointer = slamPos + (headRotation * localPointer);
+                    // We map the TRUE anatomical points directly to the world!
+                    calculatedWorldThumb = slamPos + (headRotation * thumbTip);
+                    calculatedWorldPointer = slamPos + (headRotation * indexTip);
                     calculatedWorldWrist = slamPos + (headRotation * wrist);
                     validWorldPointer = true;
                 }
@@ -184,7 +192,9 @@ namespace Perception {
                     m_state->worldPointer = calculatedWorldPointer;
                     m_state->worldWrist = calculatedWorldWrist;
                     m_state->isPointerActive = validWorldPointer;
+                    m_state->worldThumb = calculatedWorldThumb;
                 }
+                m_state->isPinching.store(currentlyPinching);
                 m_state->inferenceLatency.store(latency);
 
             }

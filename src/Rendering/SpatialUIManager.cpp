@@ -89,6 +89,8 @@ namespace Rendering {
     void SpatialUIManager::BeginFrame() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
+        ImGuiIO &io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float) m_atlasSize, (float) m_atlasSize);
         ImGui::NewFrame();
     }
 

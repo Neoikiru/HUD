@@ -52,9 +52,11 @@ namespace Core {
         std::mutex handMutex;
         std::vector<PalmObject> objects;
         std::atomic<uint64_t> inferenceLatency = 0;
+        std::atomic<bool> isPinching{false};
 
         // World pointer (Index fingertip, approximated depth)
         glm::vec3 worldPointer{0.0f};
+        glm::vec3 worldThumb{0.0f};
         glm::vec3 worldWrist{0.0f};
         bool isPointerActive = false;
 

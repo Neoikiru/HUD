@@ -3,6 +3,7 @@
 
 #include "Core/Types.hpp"
 #include "Core/SharedState.hpp"
+#include "Core/InteractionBridge.hpp"
 
 #include "Drivers/GpioButton.hpp"
 
@@ -47,7 +48,9 @@ namespace Core {
         Rendering::ARCamera m_arCamera;
         std::vector<std::unique_ptr<SpatialWindow>> m_windows;
 
-        std::unique_ptr<Rendering::SpatialUIManager> m_uiManager;
+        std::shared_ptr<Rendering::SpatialUIManager> m_uiManager;
+
+        std::unique_ptr<InteractionBridge> m_interactionBridge;
     };
 
 }

@@ -102,26 +102,24 @@ void HandTrackingWindow::Update(float deltaTime) {
     m_pointVertices.clear();
 
     bool hasHand = false;
-    glm::vec3 pointerPos;
-    glm::vec3 wristPos; {
+    glm::vec3 indexPos, wristPos, thumbPos; {
         std::lock_guard<std::mutex> lock(m_state->handMutex);
         hasHand = m_state->isPointerActive;
-        pointerPos = m_state->worldPointer;
+        indexPos = m_state->worldPointer;
         wristPos = m_state->worldWrist;
+        thumbPos = m_state->worldThumb;
+        m_isPinching = m_state->isPinching.load(); // Save state for Render()
     }
 
     if (hasHand) {
-        // Draw the thick Cursor Dot exactly on the fingertip
-        m_pointVertices.push_back(pointerPos);
+        // Draw the 3 tracking nodes
+        m_pointVertices.push_back(wristPos);
+        m_pointVertices.push_back(indexPos);
+        m_pointVertices.push_back(thumbPos);
 
-        // Draw the Wrist Laser
-        m_lineVertices.push_back(wristPos);
-
-        // Calculate the direction from Wrist -> Finger, and shoot it 1 meter forward!
-        glm::vec3 rayDirection = glm::normalize(pointerPos - wristPos);
-        glm::vec3 laserEnd = pointerPos + (rayDirection * 1.0f);
-
-        m_lineVertices.push_back(laserEnd);
+        // Draw a visual "tension wire" between Thumb and Index
+        m_lineVertices.push_back(thumbPos);
+        m_lineVertices.push_back(indexPos);
     }
 }
 
@@ -133,27 +131,39 @@ void HandTrackingWindow::Render(const glm::mat4 &viewProjectionMatrix) {
 
     glUseProgram(m_shaderProgram);
     glUniformMatrix4fv(m_mvpLoc, 1, GL_FALSE, &mvp[0][0]);
-    glUniform4f(m_colorLoc, 0.0f, 1.0f, 1.0f, 1.0f);
+
+    // --- DYNAMIC COLOR LOGIC ---
+    if (m_isPinching) {
+        // GREEN when pinching (Click active!)
+        glUniform4f(m_colorLoc, 0.0f, 1.0f, 0.0f, 1.0f);
+    } else {
+        // CYAN when open (Hovering)
+        glUniform4f(m_colorLoc, 0.0f, 1.0f, 1.0f, 1.0f);
+    }
 
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-    // --- DRAW THE WRIST LASER ---
+    // Disable depth testing so your tracking dots always draw OVER the physical world
+    glDisable(GL_DEPTH_TEST);
+
+    // --- DRAW THE TENSION WIRE ---
     if (!m_lineVertices.empty()) {
         glBufferData(GL_ARRAY_BUFFER, m_lineVertices.size() * sizeof(glm::vec3), m_lineVertices.data(),
                      GL_DYNAMIC_DRAW);
         glDrawArrays(GL_LINES, 0, m_lineVertices.size());
     }
 
-    // --- DRAW THE FINGERTIP CURSOR ---
+    // --- DRAW THE TRACKING DOTS ---
     if (!m_pointVertices.empty()) {
-        glUniform1f(m_pointSizeLoc, 15.0f);
+        glUniform1f(m_pointSizeLoc, 12.0f); // Slightly smaller, cleaner dots
         glBufferData(GL_ARRAY_BUFFER, m_pointVertices.size() * sizeof(glm::vec3), m_pointVertices.data(),
                      GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINTS, 0, m_pointVertices.size());
     }
 
     glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST); // Turn it back on for the rest of the engine!
 }
 
 void HandTrackingWindow::Destroy() {

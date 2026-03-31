@@ -18,6 +18,8 @@ public:
 private:
     std::shared_ptr<Core::SharedState> m_state;
 
+    bool m_isPinching = false;
+
     std::vector<glm::vec3> m_pointVertices; // New array for the 21 joints
     GLuint m_pointSizeLoc = -1;             // New uniform for thickness
 
