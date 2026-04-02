@@ -1,2 +1,3 @@
-# Ignore generated model headers in language stats
+# Ignore generated headers in language stats
 assets/models/headers/*.h linguist-generated=true
+assets/fonts/DejaVuSansMono.hpp linguist-generated=true
