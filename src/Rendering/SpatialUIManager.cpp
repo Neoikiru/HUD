@@ -5,6 +5,8 @@
 #include <backends/imgui_impl_sdl3.h>
 #include <imgui.h>
 
+#include "fonts/DejaVuSansMono.hpp"
+
 namespace Rendering {
 SpatialUIManager::SpatialUIManager(const int atlasSize) : m_atlasSize(atlasSize) {}
 
@@ -17,6 +19,17 @@ bool SpatialUIManager::Init(SDL_Window *window, SDL_GLContext glContext) {
     (void)io;
     io.IniFilename = nullptr;
     ImGui::StyleColorsDark();
+
+    ImFontConfig fontConfig;
+    fontConfig.FontDataOwnedByAtlas = false;
+    ImFont *mainFont =
+        io.Fonts->AddFontFromMemoryTTF((void *)DejaVuSansMono_ttf, DejaVuSansMono_ttf_len, 32.0f, &fontConfig);
+
+    if (mainFont == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[SpatialUIManager] Failed to load baked font from memory!");
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "[SpatialUIManager] Baked High-Res Font loaded.");
+    }
 
     ImGui_ImplSDL3_InitForOpenGL(window, glContext);
     ImGui_ImplOpenGL3_Init("#version 300 es");

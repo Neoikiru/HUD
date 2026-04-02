@@ -57,14 +57,30 @@ void SpatialPanel::BuildQuad() {
 void SpatialPanel::Update(float deltaTime) {
     if (!m_isVisible) return;
 
-    // Force ImGui to draw window in claimed Atlas slot
-    ImGui::SetNextWindowPos(m_atlasPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(m_panelSize, ImGuiCond_Always);
+    // ImGui::SetNextWindowPos(m_atlasPos, ImGuiCond_Always);
+    // ImGui::SetNextWindowSize(m_panelSize, ImGuiCond_Always);
 
     // Optional styling for spatial AR panels
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings;
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.05f, 0.1f, 0.8f));  // Smoked Glass
+    // ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings;
+    // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+    // ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.05f, 0.1f, 0.8f));  // Smoked Glass
+
+    // Styling v2
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 16.0f);        // Smooth curved window edges
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);          // Curved buttons
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10, 15));  // Give elements breathing room
+
+    // Smoked glass background (Dark blue/grey with 70% opacity)
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.05f, 0.08f, 0.12f, 0.70f));
+    // Neon Cyan buttons
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.4f, 0.5f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.7f, 0.8f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));  // Flash white/cyan on pinch
+
+    // Force ImGui to draw window in claimed Atlas slot
+    ImGui::SetNextWindowPos(m_atlasPos, ImGuiCond_Always);
 
     if (ImGui::Begin(m_panelName.c_str(), nullptr, flags)) {
         // Tell every attached widget to render itself
@@ -90,8 +106,8 @@ void SpatialPanel::Update(float deltaTime) {
 
     ImGui::End();
 
-    ImGui::PopStyleVar();
-    ImGui::PopStyleColor();
+    ImGui::PopStyleVar(3);
+    ImGui::PopStyleColor(4);
 }
 
 void SpatialPanel::Render(const glm::mat4 &viewProjectionMatrix) {

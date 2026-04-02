@@ -7,7 +7,7 @@
 #include <iostream>
 
 void UI::DemoCubeWindow::Init() {
-    transform.position = glm::vec3(0.0f, 0.0f, -1.5f);
+    transform.position = glm::vec3(0.0f, 0.3f, -1.5f);
     transform.scale = glm::vec3(0.1f, 0.1f, 0.1f);
 
     CompileShaders();

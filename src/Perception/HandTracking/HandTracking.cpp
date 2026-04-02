@@ -136,8 +136,12 @@ void HandTracker::WorkerLoop() {
                 float zAngle = std::acos(ratio);
                 float zOffset = -std::sin(zAngle) * MAX_FLAT_LENGTH;
 
-                // Offset index tip depth
                 indexTip.z += zOffset;
+                thumbTip.z += zOffset;
+
+                if (currentlyPinching) {
+                    thumbTip = indexTip;
+                }
 
                 // World transform
                 glm::quat headRotation;

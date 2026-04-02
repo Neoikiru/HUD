@@ -15,6 +15,7 @@
 #include "UI/SpatialPanel.hpp"
 #include "UI/Widgets/ButtonWidget.hpp"
 #include "UI/Widgets/DynamicTextWidget.hpp"
+#include "UI/Widgets/FanWidget.hpp"
 
 namespace Core {
 Engine::Engine() : m_isRunning(false) { m_state = std::make_shared<SharedState>(); }
@@ -76,65 +77,77 @@ void Engine::Initialize(const EngineConfig &config) {
     handTrackingWindow->setLockMode(UI::LockMode::World);
     m_windows.push_back(std::move(handTrackingWindow));
 
-    // Create panel with 300x200 atlas slice
-    auto mainDashboard = std::make_unique<UI::SpatialPanel>(m_uiManager, "Main Dashboard", 300, 200);
-
-    // Position in world space
-    // Position 1.5m forward and scale to 0.45
-    mainDashboard->transform.position = glm::vec3(0.0f, 0.2f, -1.5f);
-    mainDashboard->transform.scale = glm::vec3(0.45f, 0.45f, 1.0f);
-    mainDashboard->setLockMode(UI::LockMode::Body);
-
-    // Attach telemetry widget
-    auto telemetryWidget = std::make_shared<UI::DynamicTextWidget>([this]() {
-        double fps = 1.0 / m_state->frameTime.load();
-
-        std::string text = "SPATIAL OS v0.1\n";
-        text += "-------------------\n";
-        text += "FPS: " + std::to_string((int)fps) + "\n";
-
-        bool tracking = m_state->isPointerActive;
-        text += "Hand Tracking: " + std::string(tracking ? "ACTIVE" : "LOST") + "\n";
-
-        return text;
-    });
-
-    mainDashboard->AddWidget(telemetryWidget);
-
-    mainDashboard->Init();
-    mainDashboard->setVisible(true);
-    m_windows.push_back(std::move(mainDashboard));
-
-    // Create panel for light switch
-    auto smartHomePanel = std::make_unique<UI::SpatialPanel>(m_uiManager, "Smart Home", 240, 120);
-
-    // Position in world space
-    smartHomePanel->transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
-    smartHomePanel->transform.scale = glm::vec3(0.3f, 0.15f, 1.0f);
-    smartHomePanel->setLockMode(UI::LockMode::World);
-
-    // Add Home Assistant button
-    auto lampButton = std::make_shared<UI::ButtonWidget>("Toggle Desk Lamp", []() {
-        SDL_Log("Pinch Clicked! Sending Home Assistant Request...");
-
-        // Run in background to avoid stalling
+    // HA net  helper
+    auto sendHACommand = [](const std::string &domain, const std::string &service, const std::string &payload) {
         std::string cmd =
             "curl -s -X POST -H \"Authorization: Bearer "
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
             "eyJpc3MiOiJlZGZiYTIwZTRjNzE0YTJlYjA5OTZhZjEzZjE3ZWZlNCIsImlhdCI6MTc3NDM3ODg1MywiZXhwIjoyMDg5NzM4ODUzfQ."
             "31FASpq6T-XAGma7vfJQXjdeHu3rJqFhFYy6Fyh7N80\" "
             "-H \"Content-Type: application/json\" "
-            "-d '{\"entity_id\": \"switch.desk_lamp\"}' "
-            "http://192.168.12.100:8123/api/services/switch/toggle > /dev/null 2>&1 &";
-
+            "-d '" +
+            payload +
+            "' "
+            "http://192.168.12.100:8123/api/services/" +
+            domain + "/" + service + " > /dev/null 2>&1 &";
         system(cmd.c_str());
+        SDL_Log("[Home Assistant] Sent: %s.%s", domain.c_str(), service.c_str());
+    };
+    // 1. info
+    auto infoPanel = std::make_unique<UI::SpatialPanel>(m_uiManager, "Telemetry", 600, 400);
+    infoPanel->transform.position = glm::vec3(0.0f, -0.1f, -1.5f);
+    infoPanel->transform.scale = glm::vec3(0.35f, 0.25f, 1.0f);
+    infoPanel->setLockMode(UI::LockMode::World);
+
+    auto telemetryWidget = std::make_shared<UI::DynamicTextWidget>([this]() {
+        double fps = 1.0 / m_state->frameTime.load();
+        uint64_t latency = m_state->inferenceLatency.load();
+        bool pinch = m_state->isPinching.load();
+
+        std::string text = "PROJECT HUD v1.0\n";
+        text += "-------------------\n";
+        text += "Engine FPS: " + std::to_string((int)fps) + "\n";
+        text += "AI Latency: " + std::to_string(latency) + " ms\n";
+        text += "Pinch State: " + std::string(pinch ? "[ACTIVE]" : "[OPEN]") + "\n\n ";
+
+        return text;
     });
 
-    smartHomePanel->AddWidget(lampButton);
+    infoPanel->AddWidget(telemetryWidget);
+    infoPanel->Init();
+    infoPanel->setVisible(true);
+    m_windows.push_back(std::move(infoPanel));
 
-    smartHomePanel->Init();
-    smartHomePanel->setVisible(true);
-    m_windows.push_back(std::move(smartHomePanel));
+    // 2. fan
+    auto fanPanel = std::make_unique<UI::SpatialPanel>(m_uiManager, "Climate", 700, 500);
+    fanPanel->transform.position = glm::vec3(-1.2f, -0.2f, -1.2f);
+    fanPanel->transform.scale = glm::vec3(0.35f, 0.25f, 1.0f);
+    fanPanel->transform.rotation = glm::angleAxis(glm::radians(50.0f), glm::vec3(0, 1, 0));
+    fanPanel->setLockMode(UI::LockMode::World);
+
+    auto fanWidget = std::make_shared<UI::FanWidget>(sendHACommand);
+
+    fanPanel->AddWidget(fanWidget);
+    fanPanel->Init();
+    fanPanel->setVisible(true);
+    m_windows.push_back(std::move(fanPanel));
+
+    // 3. lamp
+    auto lampPanel = std::make_unique<UI::SpatialPanel>(m_uiManager, "Lighting", 500, 300);
+    lampPanel->transform.position = glm::vec3(1.6f, 0.0f, -1.0f);
+    lampPanel->transform.scale = glm::vec3(0.25f, 0.15f, 1.0f);
+    lampPanel->transform.rotation = glm::angleAxis(glm::radians(-45.0f), glm::vec3(0, 1, 0));
+    lampPanel->setLockMode(UI::LockMode::World);
+
+    auto lampButton = std::make_shared<UI::ButtonWidget>("Toggle", [sendHACommand]() {
+        sendHACommand("switch", "toggle", "{\"entity_id\": \"switch.desk_lamp\"}");
+        sendHACommand("light", "toggle", "{\"entity_id\": \"light.wled\"}");
+    });
+
+    lampPanel->AddWidget(lampButton);
+    lampPanel->Init();
+    lampPanel->setVisible(true);
+    m_windows.push_back(std::move(lampPanel));
 
     ThreadUtils::PinThreadToCore(0);
 
